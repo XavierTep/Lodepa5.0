@@ -1,68 +1,132 @@
 export const measurementRanges = {
   temperature: {
+
     good: { min: 20, max: 25 },
+
     warning: { min: 18, max: 28 },
+
   },
+
   humidity: {
+
     good: { min: 40, max: 60 },
-    warning: { min: 30, max: 70 },
+
+    warning: { min: 25, max: 75 },
+
   },
+
   co2: {
+
     good: { min: 0, max: 800 },
-    warning: { min: 801, max: 1500 },
+
+    warning: { min: 0, max: 1100 },
+
   },
+
   vocs: {
-    good: { min: 0, max: 220 },
-    warning: { min: 221, max: 660 },
+
+    good: { min: 0, max: 900 },
+
+    warning: { min: 0, max: 1200 },
+
   },
+
   pm25: {
+
     good: { min: 0, max: 25 },
+
     warning: { min: 26, max: 50 },
+
   },
+
   pm10: {
+
     good: { min: 0, max: 50 },
+
     warning: { min: 51, max: 100 },
+
   },
+
   covid19: {
+
     good: { min: 60, max: 100 },
+
     warning: { min: 30, max: 59 },
+
   },
+
   iaq: {
+
     good: { min: 66, max: 100 },
+
     warning: { min: 33, max: 65 },
+
   },
+
   thermalIndicator: {
+
     good: { min: 80, max: 100 },
+
     warning: { min: 60, max: 79 },
+
   },
+
   ventilationIndicator: {
+
     good: { min: 80, max: 100 },
+
     warning: { min: 60, max: 79 },
+
   },
+
   formaldehyde: {
-    good: { min: 0, max: 0.1 },
-    warning: { min: 0.11, max: 0.3 },
+
+    good: { min: 0, max: 0.65 },
+
+    warning: { min: 0, max: 1 },
+
   },
+
   o3: {
+
     good: { min: 0, max: 0.05 },
-    warning: { min: 0.06, max: 0.1 },
+
+    warning: { min: 0, max: 0.1 },
+
   },
+
   co: {
+
     good: { min: 0, max: 9 },
+
     warning: { min: 10, max: 35 },
+
   },
+
   no2: {
-    good: { min: 0, max: 0.053 },
+
+    good: { min: 0, max: 25 },
+
     warning: { min: 0.054, max: 0.1 },
+
   },
+
   pm1: {
+
     good: { min: 0, max: 10 },
+
     warning: { min: 11, max: 20 },
+
   },
+
   pm4: {
+
     good: { min: 0, max: 30 },
+
     warning: { min: 31, max: 50 },
+
   },
+
 };
 
 export const getStatus = (name: string, value: any): string => {

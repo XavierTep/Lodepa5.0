@@ -22,6 +22,7 @@ export default function Badge({ data }: any) {
     })
   }
 
+  
   const color = getStatus("iaq", iaq)
   const radius = 18
   const circumference = 2 * Math.PI * radius
@@ -34,9 +35,29 @@ export default function Badge({ data }: any) {
     const differenceInMs = now.getTime() - givenDate.getTime();
     const differenceInMinutes = differenceInMs / (1000 * 60); // Convertir a minutos
 
-    return differenceInMinutes <= 20;
+    return differenceInMinutes <= 90; // Modificacion para que siempre conste 
   };
+const parametros_variables  = [ "co2", "formaldehyde", "co", "o3", "no2"];
 
+parametros_variables.forEach((parametro) => {
+
+  const Entry = measurementEntries.find(([key]) => key === parametro);
+  if (Entry) {
+    Entry[1] = (Entry[1] as number) / 1000;  //Transformacion del valor de formaldehyde a ppm en vez de ppb
+  }
+
+});
+
+
+  function decimales(string: string) {
+    if (string === "formaldehyde" || string === "co" || string === "o3" || string === "no2") {
+      return 3;
+    }
+    else {
+      return 1;
+    }
+  }
+ 
   return (
     <div className="relative group">
       <Link href={`/dashboard/dispositivo/${dispositivo.id}`}>
@@ -98,7 +119,8 @@ export default function Badge({ data }: any) {
                         : "text-red-600"
                       }`}
                   >
-                    {(value as number).toFixed(1)} {getMeasurementUnit(key)}
+                    
+                    {(value as number).toFixed(decimales(key))} {getMeasurementUnit(key)}
                   </span>
                 </div>
               ))}

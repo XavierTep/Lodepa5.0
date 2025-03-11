@@ -1,5 +1,6 @@
 import db from '@/lib/db'; // Asegúrate de que db está bien configurado en lib/db.ts o lib/db.js
 import { NextResponse } from 'next/server';
+import { getSession } from '@/actions/auth/getSession';
 
 function transformData(rows: any[]) {
   const hospitalsMap = new Map();
@@ -91,19 +92,68 @@ function parseUpdateTime(updateTime: string): number[] {
 
 export async function GET() {
   try {
-    // Ejecutar la consulta SQL
-    const [rows]: any[] = await db.query(
-      `SELECT h.id AS id_hospital, h.hospital, s.id AS id_sala, s.n_sala, d.id AS id_dispositivo, d.n_dispositivo, r.*
-      FROM hospitales h
-      JOIN salas s ON h.id = s.hospital
-      JOIN dispositivos d ON s.id = d.sala
-      JOIN registros r ON d.id = r.dispositivo
-      WHERE r.update_time = (
-        SELECT MAX(r2.update_time)
-        FROM registros r2
-        WHERE r2.dispositivo = r.dispositivo
-      );`
-    );
+    const { id, rol } = await getSession();
+    // Ejecutar la consulta SQL segun el Rol
+    let rows: any;
+    switch(rol){
+      // Si el rol es ADMIN
+      case 1:
+        [rows] = await db.query(
+              `SELECT h.id AS id_hospital, h.hospital, s.id AS id_sala, s.n_sala, d.id AS id_dispositivo, d.n_dispositivo, r.*
+              FROM hospitales h
+              JOIN salas s ON h.id = s.hospital
+              JOIN dispositivos d ON s.id = d.sala
+              JOIN registros r ON d.id = r.dispositivo
+              WHERE r.update_time = (
+                SELECT MAX(r2.update_time)
+                FROM registros r2
+                WHERE r2.dispositivo = r.dispositivo
+              );`
+            );
+        break;
+      // Responsable de Hospital
+      case 2:
+        [rows] = await db.query(
+          `SELECT 
+              h.id AS id_hospital, 
+              h.hospital, 
+              s.id AS id_sala, 
+              s.n_sala, 
+              d.id AS id_dispositivo, 
+              d.n_dispositivo, 
+              r.*
+          FROM hospitales h
+          JOIN usuarios_hospitales uh ON h.id = uh.hospital_id
+          JOIN salas s ON h.id = s.hospital
+          LEFT JOIN dispositivos d ON s.id = d.sala
+          LEFT JOIN registros r ON d.id = r.dispositivo 
+          AND r.update_time = (
+              SELECT MAX(r2.update_time)
+              FROM registros r2
+              WHERE r2.dispositivo = d.id
+          )
+          WHERE uh.usuario_id = ?;
+          `,
+          [id]
+        );
+      break;
+      // Usuario de la Sala
+      case 3:
+        [rows] = await db.query(
+          `SELECT h.id AS id_hospital, h.hospital, s.id AS id_sala, s.n_sala, d.id AS id_dispositivo, d.n_dispositivo, r.*
+            FROM salas s
+            JOIN hospitales h ON s.hospital = h.id
+            LEFT JOIN dispositivos d ON s.id = d.sala
+            LEFT JOIN registros r ON d.id = r.dispositivo
+            AND r.update_time = (
+                SELECT MAX(r2.update_time)
+                FROM registros r2
+                WHERE r2.dispositivo = d.id
+            )
+            WHERE s.id = ?;`,[id]
+        );
+        break;
+    }
 
     // Transformar los datos correctamente
     const transformedData = transformData(rows);
