@@ -1,8 +1,8 @@
 'use client';
 
+import Indicadores from '../Indicadores/Indicadores';
 import '../SubMenu/Submenu.css';
 import Parametros from '../parametros/Parametros';
-import Indicadores from '../Indicadores/Indicadores';
 // import Grafica from '../grafica/Grafica';
 import { Suspense, useState } from 'react';
 
@@ -28,14 +28,14 @@ const Submenu: React.FC<SubmenuProps> = ({ id }) => {
     console.log('Tag seleccionado:', tag);
     console.log('ID recibido:', id);
   };
-   const DefaultComponent = () => <h2>Selecciona una opción</h2>;
+  const DefaultComponent = () => <h2>Selecciona una opción</h2>;
   // Selecciona el componente a renderizar según el tag seleccionado
   let ComponentToRender;
   if (tag === 'parametros') ComponentToRender = Parametros;
   else if (tag === 'indicadores') ComponentToRender = Indicadores;
   // else if (tag === 'grafica') ComponentToRender = Grafica;
 
-  else ComponentToRender  =  DefaultComponent;
+  else ComponentToRender = DefaultComponent;
 
   return (
     <div>
@@ -44,7 +44,7 @@ const Submenu: React.FC<SubmenuProps> = ({ id }) => {
         {items.map((item) => (
           <button
             key={item.path}
-            className="menu-item"
+            className={`menu-item ${item.path === tag ? 'active' : ''}`}
             onClick={() => handleClick(item.path)}
           >
             {item.name}
