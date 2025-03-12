@@ -1,32 +1,32 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
 
-// Función para convertir update_time a la zona horaria de Madrid (España)
+// Función para parsear la fecha sin forzar zona horaria
 function parseUpdateTime(updateTime: string): number[] {
   const date = new Date(updateTime);
 
-  // Convertimos a la zona horaria de Madrid
-  const madridTime = new Intl.DateTimeFormat("es-ES", {
-    timeZone: "Europe/Madrid",
+  // Formateamos la fecha con la configuración regional "es-ES"
+  // pero SIN especificar timeZone.
+  const parts = new Intl.DateTimeFormat("es-ES", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-    hour12: false, // Mantiene el formato 24h
+    hour12: false, // Formato 24 horas
   }).formatToParts(date);
 
-  // Mapeamos cada parte de la fecha a su correspondiente valor numérico
   return [
-    Number(madridTime.find((p) => p.type === "year")?.value),
-    Number(madridTime.find((p) => p.type === "month")?.value),
-    Number(madridTime.find((p) => p.type === "day")?.value),
-    Number(madridTime.find((p) => p.type === "hour")?.value),
-    Number(madridTime.find((p) => p.type === "minute")?.value),
-    Number(madridTime.find((p) => p.type === "second")?.value),
+    Number(parts.find((p) => p.type === "year")?.value),
+    Number(parts.find((p) => p.type === "month")?.value),
+    Number(parts.find((p) => p.type === "day")?.value),
+    Number(parts.find((p) => p.type === "hour")?.value),
+    Number(parts.find((p) => p.type === "minute")?.value),
+    Number(parts.find((p) => p.type === "second")?.value),
   ];
 }
+
 
 export async function GET(
   request: Request,
@@ -82,15 +82,15 @@ export async function GET(
         temperature: parseFloat(row.temperature),
         humidity: parseFloat(row.humidity),
         co2: parseFloat(row.co2),
-        formaldehyde: parseFloat(row.formaldehyde),
+        formaldehyde: (parseFloat(row.formaldehyde)/1000),
         vocs: parseFloat(row.vocs),
         pm1: parseFloat(row.pm1),
         pm4: parseFloat(row.pm4),
         pm10: parseFloat(row.pm10),
         pm25: parseFloat(row.pm25),
-        co: parseFloat(row.co),
-        o3: parseFloat(row.o3),
-        no2: parseFloat(row.no2),
+        co: (parseFloat(row.co)/1000),
+        o3: (parseFloat(row.o3)/1000),
+        no2: (parseFloat(row.no2)/1000),
         covid19: parseFloat(row.covid19),
         iaq: parseFloat(row.iaq),
         thermalIndicator: parseFloat(row.thermal_indicator),

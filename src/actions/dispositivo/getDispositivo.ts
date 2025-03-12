@@ -1,5 +1,4 @@
 'use server';
-
 import db from '@/lib/db';
 
 interface Dispositivo {
@@ -21,6 +20,6 @@ export const getDispositivo = async (id: string) => {
     `,
     [id]
   );
-
+  
   return rows[0] as Dispositivo;
 };

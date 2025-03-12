@@ -37,7 +37,7 @@ export default function Badge({ data }: any) {
 
     return differenceInMinutes <= 90; // Modificacion para que siempre conste 
   };
-const parametros_variables  = [ "co2", "formaldehyde", "co", "o3", "no2"];
+/*const parametros_variables  = [ "formaldehyde", "co", "o3", "no2"];
 
 parametros_variables.forEach((parametro) => {
 
@@ -46,7 +46,7 @@ parametros_variables.forEach((parametro) => {
     Entry[1] = (Entry[1] as number) / 1000;  //Transformacion del valor de formaldehyde a ppm en vez de ppb
   }
 
-});
+});*/
 
 
   function decimales(string: string) {

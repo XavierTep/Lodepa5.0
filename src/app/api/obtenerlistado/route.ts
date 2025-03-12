@@ -1,6 +1,6 @@
+import { getSession } from '@/actions/auth/getSession';
 import db from '@/lib/db'; // Asegúrate de que db está bien configurado en lib/db.ts o lib/db.js
 import { NextResponse } from 'next/server';
-import { getSession } from '@/actions/auth/getSession';
 
 function transformData(rows: any[]) {
   const hospitalsMap = new Map();
@@ -47,10 +47,10 @@ function transformData(rows: any[]) {
       vocs: parseFloat(row.vocs),
       thermalIndicator: parseFloat(row.thermal_indicator),
       ventilationIndicator: parseFloat(row.ventilation_indicator),
-      co: parseFloat(row.co),
-      formaldehyde: parseFloat(row.formaldehyde),
-      no2: parseFloat(row.no2),
-      o3: parseFloat(row.o3),
+      co: (parseFloat(row.co)/1000),
+      formaldehyde: (parseFloat(row.formaldehyde)/1000),
+      no2: (parseFloat(row.no2)/1000),
+      o3: (parseFloat(row.o3)/1000),
       pm1: parseFloat(row.pm1),
       pm4: parseFloat(row.pm4),
     });
@@ -63,35 +63,36 @@ function transformData(rows: any[]) {
   }));
 }
 
-// Función para convertir update_time a la zona horaria de Madrid (España)
+// Función para parsear la fecha sin forzar zona horaria
 function parseUpdateTime(updateTime: string): number[] {
   const date = new Date(updateTime);
 
-  // Convertimos a la zona horaria de Madrid
-  const madridTime = new Intl.DateTimeFormat('es-ES', {
-    timeZone: 'Europe/Madrid',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false, // Mantiene el formato 24h
+  // Formateamos la fecha con la configuración regional "es-ES"
+  // pero SIN especificar timeZone.
+  const parts = new Intl.DateTimeFormat("es-ES", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false, // Formato 24 horas
   }).formatToParts(date);
 
-  // Mapeamos cada parte de la fecha a su correspondiente valor numérico
   return [
-    Number(madridTime.find((p) => p.type === 'year')?.value),
-    Number(madridTime.find((p) => p.type === 'month')?.value),
-    Number(madridTime.find((p) => p.type === 'day')?.value),
-    Number(madridTime.find((p) => p.type === 'hour')?.value),
-    Number(madridTime.find((p) => p.type === 'minute')?.value),
-    Number(madridTime.find((p) => p.type === 'second')?.value),
+    Number(parts.find((p) => p.type === "year")?.value),
+    Number(parts.find((p) => p.type === "month")?.value),
+    Number(parts.find((p) => p.type === "day")?.value),
+    Number(parts.find((p) => p.type === "hour")?.value),
+    Number(parts.find((p) => p.type === "minute")?.value),
+    Number(parts.find((p) => p.type === "second")?.value),
   ];
 }
 
+
 export async function GET() {
   try {
+
     const { id, rol } = await getSession();
     // Ejecutar la consulta SQL segun el Rol
     let rows: any;
@@ -153,7 +154,7 @@ export async function GET() {
             WHERE s.id = ?;`,[id]
         );
         break;
-    }
+    }    
 
     // Transformar los datos correctamente
     const transformedData = transformData(rows);
