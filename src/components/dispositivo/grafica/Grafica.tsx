@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, Pause } from "lucide-react"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -25,20 +25,23 @@ const parameterOptions = [
   { value: "temperature", label: "Temperatura (°C)" },
   { value: "humidity", label: "Humedad (%)" },
   { value: "co2", label: "CO₂ (ppm)" },
-  { value: "formaldehyde", label: "Formaldehído (ppb)" },
+  { value: "formaldehyde", label: "Formaldehído (ppm)" }, // Cambiado de ppb a ppm
   { value: "vocs", label: "TVOC (INDEX)" },
   { value: "pm1", label: "PM1.0 (μg/m³)" },
   { value: "pm25", label: "PM2.5 (μg/m³)" },
   { value: "pm4", label: "PM4.0 (μg/m³)" },
   { value: "pm10", label: "PM10 (μg/m³)" },
   { value: "co", label: "CO (ppm)" },
-  { value: "o3", label: "O₃ (ppb)" },
-  { value: "no2", label: "NO₂ (ppb)" },
+  { value: "o3", label: "O₃ (ppm)" }, // Cambiado de ppb a ppm
+  { value: "no2", label: "NO₂ (ppm)" }, // Cambiado de ppb a ppm
   { value: "iaq", label: "IAQ" },
   { value: "thermal_indicator", label: "Indicador Térmico" },
   { value: "ventilation_indicator", label: "Indicador de Ventilación" },
   { value: "covid19", label: "COVID-19" },
 ]
+
+// Parámetros que necesitan conversión de ppb a ppm (dividir por 1000)
+const parametersToConvert = ["formaldehyde", "o3", "no2"]
 
 // Opciones para el selector de rango de tiempo
 const timeRangeOptions = [
@@ -171,7 +174,33 @@ export function Grafica({ id }: GraficaProps) {
 
       const data = await getGraphicsData(id, parameter, timeRange, customStartDate, customEndDate)
 
-      setGraphData(data)
+      // Convertir valores de ppb a ppm para formaldehído, O₃ y NO₂
+      if (parametersToConvert.includes(parameter)) {
+        // Convertir los valores de los datos
+        const convertedData = data.data.map((point) => ({
+          ...point,
+          value: point.value / 1000, // Convertir de ppb a ppm (dividir por 1000)
+        }))
+
+        // Actualizar los valores estadísticos
+        const convertedMin = data.min / 1000
+        const convertedMax = data.max / 1000
+        const convertedMed = data.med / 1000
+
+        // Actualizar la unidad a ppm
+        const updatedData = {
+          ...data,
+          data: convertedData,
+          min: Number(convertedMin.toFixed(3)),
+          max: Number(convertedMax.toFixed(3)),
+          med: Number(convertedMed.toFixed(3)),
+          unit: "ppm", // Cambiar la unidad de ppb a ppm
+        }
+
+        setGraphData(updatedData)
+      } else {
+        setGraphData(data)
+      }
 
       // Si no estamos usando fechas personalizadas, actualizar las fechas con las de la respuesta
       if (!useCustomDates) {
@@ -242,7 +271,7 @@ export function Grafica({ id }: GraficaProps) {
   }
 
   return (
-    <Card className="w-full  mx-auto h-full overflow-hidden">
+    <Card className="w-full max-w-[1000px] mx-auto h-full overflow-hidden">
       <CardContent className="p-4 md:p-6 space-y-4 max-w-full">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Selector de parámetros */}
@@ -286,7 +315,10 @@ export function Grafica({ id }: GraficaProps) {
                 Aplicar fechas
               </Button>
             )}
-            
+            <Button variant="outline" size="icon" className="ml-auto">
+              <Pause className="h-4 w-4" />
+              <span className="sr-only">Pausar</span>
+            </Button>
           </div>
         </div>
 
@@ -391,7 +423,7 @@ export function Grafica({ id }: GraficaProps) {
           </span>
         </div>
 
-        {/* Indicadores de valores*/}
+        {/* Indicadores de valores */}
         {graphData && (
           <div className="flex flex-wrap gap-3 mb-6">
             <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
@@ -440,7 +472,15 @@ export function Grafica({ id }: GraficaProps) {
                     tick={{ fontSize: 12 }}
                     tickMargin={10}
                   />
-                  <YAxis domain={["auto", "auto"]} tick={{ fontSize: 12 }} tickMargin={10} />
+                  <YAxis
+                    domain={["auto", "auto"]}
+                    tick={{ fontSize: 12 }}
+                    tickMargin={10}
+                    // Usar más decimales para valores pequeños (como ppm convertidos de ppb)
+                    tickFormatter={(value) =>
+                      parametersToConvert.includes(parameter) && value < 0.1 ? value.toFixed(3) : value.toFixed(1)
+                    }
+                  />
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <ChartTooltip
                     content={({ active, payload, label }) => {
@@ -454,7 +494,14 @@ export function Grafica({ id }: GraficaProps) {
                                 <span className="text-muted-foreground">{graphData.parameter}</span>
                               </div>
                               <div className="font-medium">
-                                {payload[0].value} {graphData.unit}
+                                {parametersToConvert.includes(parameter)
+                                  ? typeof payload[0]?.value === "number"
+                                    ? payload[0].value.toFixed(3)
+                                    : "N/A"
+                                  : typeof payload[0]?.value === "number"
+                                    ? payload[0].value.toFixed(1)
+                                    : "N/A"}{" "}
+                                {graphData.unit}
                               </div>
                             </div>
                           </div>
@@ -480,9 +527,9 @@ export function Grafica({ id }: GraficaProps) {
         </div>
 
         {/* Última actualización */}
-        {/* <div className="mt-6 text-sm text-muted-foreground">
+        <div className="mt-6 text-sm text-muted-foreground">
           Última actualización: {new Date().toLocaleString("es-ES")}
-        </div> */}
+        </div>
       </CardContent>
     </Card>
   )

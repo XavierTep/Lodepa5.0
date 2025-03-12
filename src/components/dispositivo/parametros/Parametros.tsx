@@ -57,17 +57,17 @@ const Parametros: React.FC<ParametrosProps> = ({ id }) => {
         setParametros((prevParametros) =>
           prevParametros.map((parametro) => {
             // Se obtiene el nuevo valor o se conserva el valor inicial si no existe en el último registro
-            
+            let nuevoValor = ultimoRegistro[parametro.key] ?? parametro.valor;
       
-            
+
             if (parametro.key === "formaldehyde" || parametro.key === "co" || parametro.key === "o3" || parametro.key === "no2") {
-              
+              nuevoValor = nuevoValor ;
               parametro.unidad = "ppm";
             }
         
             return {
               ...parametro,
-              
+              valor: nuevoValor,
             };
           })
         );
