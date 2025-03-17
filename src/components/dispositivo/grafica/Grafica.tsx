@@ -11,7 +11,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, ReferenceLine } from "recharts"
 
 import {
   getGraphicsData,
@@ -19,6 +19,8 @@ import {
   type TimeRange,
   type GraphicsResponse,
 } from "@/actions/dispositivo/graphics"
+
+import { getParameterThresholds, getStatus } from "@/actions/dispositivo/umbrales"
 
 // Opciones para el selector de parámetros
 const parameterOptions = [
@@ -50,6 +52,14 @@ const timeRangeOptions = [
   { value: "2w", label: "2 semanas" },
   { value: "1m", label: "1 mes" },
 ]
+
+// Tipo para los umbrales específicos de un parámetro
+type ParameterThresholds = {
+  min_good: number
+  max_good: number
+  min_warning: number
+  max_warning: number
+} | null
 
 interface GraficaProps {
   id: string // Recibe el id del dispositivo desde el submenu
@@ -128,6 +138,17 @@ function calculateDateRange(timeRange: TimeRange): { startDate: Date; endDate: D
   return { startDate, endDate }
 }
 
+// Función para obtener el color de estado según el valor y los umbrales
+function getStatusColor(value: number, thresholds: ParameterThresholds): string {
+  if (!thresholds) return "#22c55e" // Verde por defecto
+
+  const { min_good, max_good, min_warning, max_warning } = thresholds
+
+  if (value >= min_good && value <= max_good) return "#22c55e" // Verde
+  if (value >= min_warning && value <= max_warning) return "#eab308" // Amarillo
+  return "#ef4444" // Rojo
+}
+
 export function Grafica({ id }: GraficaProps) {
   // Estados para los selectores y fechas
   const [parameter, setParameter] = useState<ParameterType>("temperature")
@@ -143,12 +164,33 @@ export function Grafica({ id }: GraficaProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Estado para los umbrales
+  const [thresholds, setThresholds] = useState<ParameterThresholds>(null)
+  const [currentValueStatus, setCurrentValueStatus] = useState<string>("#22c55e") // Color verde por defecto
+
   // Inicializar fechas al cargar el componente
   useEffect(() => {
     const { startDate: calculatedStartDate, endDate: calculatedEndDate } = calculateDateRange(timeRange)
     setStartDate(calculatedStartDate)
     setEndDate(calculatedEndDate)
   }, [timeRange])
+
+// Envolvemos loadThresholds en useCallback para mantener su referencia estable
+const loadThresholds = useCallback(async () => {
+  try {
+    const thresholdData = await getParameterThresholds(parameter)
+    setThresholds(thresholdData)
+  } catch (err) {
+    console.error("Error al cargar los umbrales:", err)
+  }
+}, [parameter])
+
+// Cargar los umbrales cuando cambia el parámetro
+useEffect(() => {
+  loadThresholds()
+}, [loadThresholds])
+
+  
 
   // Actualizar fechas cuando cambia el rango de tiempo (solo si no se están usando fechas personalizadas)
   useEffect(() => {
@@ -198,8 +240,34 @@ export function Grafica({ id }: GraficaProps) {
         }
 
         setGraphData(updatedData)
+
+        // Obtener el estado del valor actual (último valor)
+        if (convertedData.length > 0) {
+          const lastValue = convertedData[convertedData.length - 1].value
+          if (thresholds) {
+            const statusColor = getStatusColor(lastValue, thresholds)
+            setCurrentValueStatus(statusColor)
+          } else {
+            // Si no hay umbrales, usar la función del servidor
+            const statusColor = await getStatus(parameter, lastValue)
+            setCurrentValueStatus(statusColor)
+          }
+        }
       } else {
         setGraphData(data)
+
+        // Obtener el estado del valor actual (último valor)
+        if (data.data.length > 0) {
+          const lastValue = data.data[data.data.length - 1].value
+          if (thresholds) {
+            const statusColor = getStatusColor(lastValue, thresholds)
+            setCurrentValueStatus(statusColor)
+          } else {
+            // Si no hay umbrales, usar la función del servidor
+            const statusColor = await getStatus(parameter, lastValue)
+            setCurrentValueStatus(statusColor)
+          }
+        }
       }
 
       // Si no estamos usando fechas personalizadas, actualizar las fechas con las de la respuesta
@@ -223,7 +291,7 @@ export function Grafica({ id }: GraficaProps) {
     } finally {
       setLoading(false)
     }
-  }, [id, parameter, timeRange, startDate, endDate, useCustomDates])
+  }, [id, parameter, timeRange, startDate, endDate, useCustomDates, thresholds])
 
   const loadDataRef = useRef(loadData)
 
@@ -269,6 +337,9 @@ export function Grafica({ id }: GraficaProps) {
       loadData()
     }
   }
+
+  // Usar los umbrales directamente sin conversión
+  const displayThresholds = thresholds
 
   return (
     <Card className="w-full max-w-[1000px] mx-auto h-full overflow-hidden">
@@ -435,6 +506,13 @@ export function Grafica({ id }: GraficaProps) {
             <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
               max. {graphData.max}
             </div>
+            {/* Indicador de estado actual */}
+            <div
+              className="px-4 py-2 rounded-full text-sm font-medium text-white"
+              style={{ backgroundColor: currentValueStatus }}
+            >
+              Estado actual
+            </div>
           </div>
         )}
 
@@ -473,37 +551,83 @@ export function Grafica({ id }: GraficaProps) {
                     tickMargin={10}
                   />
                   <YAxis
-                    domain={["auto", "auto"]}
-                    tick={{ fontSize: 12 }}
-                    tickMargin={10}
-                    // Usar más decimales para valores pequeños (como ppm convertidos de ppb)
-                    tickFormatter={(value) =>
-                      parametersToConvert.includes(parameter) && value < 0.1 ? value.toFixed(3) : value.toFixed(1)
-                    }
-                  />
+  domain={[
+    (dataMin: number) => {
+      // Ajustar el mínimo si min_warning está por debajo de la data
+      if (displayThresholds) {
+        return Math.min(dataMin, displayThresholds.min_warning);
+      }
+      return dataMin;
+    },
+    (dataMax: number) => {
+      // Ajustar el máximo si max_warning está por encima de la data
+      if (displayThresholds) {
+        return Math.max(dataMax, displayThresholds.max_warning);
+      }
+      return dataMax;
+    },
+  ]}
+/>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
+
+                  {/* Líneas de referencia para los umbrales */}
+                  {displayThresholds && (
+                    <>
+                      <ReferenceLine
+  y={displayThresholds.min_warning}
+  stroke="#eab308"
+  strokeDasharray="3 3" 
+  ifOverflow="extendDomain"
+  label="Min Warning"
+/>
+<ReferenceLine
+  y={displayThresholds.max_warning}
+  stroke="#ef4444"
+  strokeDasharray="3 3"
+  ifOverflow="extendDomain"
+  label="Max Warning"
+/>
+                    </>
+                  )}
+
                   <ChartTooltip
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
+                        const value = payload[0].value as number
+                        let statusColor = "#22c55e" // Verde por defecto el color de la r
+
+                        // Determinar el color según los umbrales
+                        if (displayThresholds) {
+                          statusColor = getStatusColor(value, displayThresholds)
+                        }
+
                         return (
                           <div className="bg-background border rounded-md shadow-sm px-3 py-2 text-sm">
                             <div className="font-medium">{formatDateTime(label)}</div>
                             <div className="mt-1 flex items-center justify-between gap-2">
                               <div className="flex items-center gap-1">
-                                <div className="h-2 w-2 rounded-full bg-[#10b981]" />
+                                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: statusColor }} />
                                 <span className="text-muted-foreground">{graphData.parameter}</span>
                               </div>
                               <div className="font-medium">
-                                {parametersToConvert.includes(parameter)
-                                  ? typeof payload[0]?.value === "number"
-                                    ? payload[0].value.toFixed(3)
-                                    : "N/A"
-                                  : typeof payload[0]?.value === "number"
-                                    ? payload[0].value.toFixed(1)
-                                    : "N/A"}{" "}
+                                {parametersToConvert.includes(parameter) ? value.toFixed(3) : value.toFixed(1)}{" "}
                                 {graphData.unit}
                               </div>
                             </div>
+                            {displayThresholds && (
+                              <div className="mt-1 text-xs">
+                                <div className="text-muted-foreground">
+                                  Estado:
+                                  <span className="ml-1 font-medium" style={{ color: statusColor }}>
+                                    {statusColor === "#22c55e"
+                                      ? "Bueno"
+                                      : statusColor === "#eab308"
+                                        ? "Advertencia"
+                                        : "Peligro"}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )
                       }

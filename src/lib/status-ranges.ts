@@ -1,4 +1,4 @@
-export const measurementRanges = {
+/*export const measurementRanges = {
   temperature: {
 
     good: { min: 20, max: 25 },
@@ -137,8 +137,8 @@ export const getStatus = (name: string, value: any): string => {
   if (value <= ranges.warning.max && value >= ranges.warning.min)
     return '#eab308';
   return '#ef4444';
-};
-
+}; Sustiuido por un server action 
+*/
 export const formatMeasurementName = (name: string): string => {
   const nameMap: Record<string, string> = {
     temperature: 'Temperatura',

@@ -1,9 +1,20 @@
-import { formatMeasurementName, getMeasurementUnit, getStatus } from "@/lib/status-ranges"
+import { formatMeasurementName, getMeasurementUnit } from "@/lib/status-ranges"
 import Link from "next/link"
 
 
-export default function Badge({ data }: any) {
+export default function Badge({ data, n_salaBadge, rango}: {data: any;n_salaBadge:string ;rango:any}) {
   const { dispositivo, iaq, updateTime, ...measurements } = data
+
+
+  const getStatus = (name: string, value: any): string => {
+    const ranges = rango[name as keyof typeof rango];
+    if (!ranges) return '#22c55e';
+
+    if (value <= ranges.good.max && value >= ranges.good.min) return '#22c55e';
+    if (value <= ranges.warning.max && value >= ranges.warning.min)
+      return '#eab308';
+    return '#ef4444';
+  };
 
   // Excluir campos que no son mediciones
   const excludeFields = ["id", "dispositivo", "updateTime"]
@@ -22,7 +33,6 @@ export default function Badge({ data }: any) {
     })
   }
 
-  
   const color = getStatus("iaq", iaq)
   const radius = 18
   const circumference = 2 * Math.PI * radius
@@ -35,34 +45,14 @@ export default function Badge({ data }: any) {
     const differenceInMs = now.getTime() - givenDate.getTime();
     const differenceInMinutes = differenceInMs / (1000 * 60); // Convertir a minutos
 
-    return differenceInMinutes <= 90; // Modificacion para que siempre conste 
+    return differenceInMinutes <= 20;
   };
-/*const parametros_variables  = [ "formaldehyde", "co", "o3", "no2"];
 
-parametros_variables.forEach((parametro) => {
-
-  const Entry = measurementEntries.find(([key]) => key === parametro);
-  if (Entry) {
-    Entry[1] = (Entry[1] as number) / 1000;  //Transformacion del valor de formaldehyde a ppm en vez de ppb
-  }
-
-});*/
-
-
-  function decimales(string: string) {
-    if (string === "formaldehyde" || string === "co" || string === "o3" || string === "no2") {
-      return 3;
-    }
-    else {
-      return 1;
-    }
-  }
- 
   return (
     <div className="relative group">
       <Link href={`/dashboard/dispositivo/${dispositivo.id}`}>
         <div className="inline-flex items-center px-4 py-2 bg-neutral-100 rounded-full w-fit hover:bg-neutral-200 transition-colors cursor-pointer">
-          <span className="text-neutral-800 font-medium mr-3 text-sm">{dispositivo.ndispositivo}</span>
+          <span className="text-neutral-800 font-medium mr-3 text-sm">{n_salaBadge}</span>
           <div className="relative flex items-center justify-center shrink-0">
             <svg width="44" height="44" viewBox="0 0 44 44">
               <circle cx="22" cy="22" r={radius} fill="transparent" stroke="#e6e6e6" strokeWidth="2" />
@@ -119,8 +109,7 @@ parametros_variables.forEach((parametro) => {
                         : "text-red-600"
                       }`}
                   >
-                    
-                    {(value as number).toFixed(decimales(key))} {getMeasurementUnit(key)}
+                    {(value as number).toFixed(1)} {getMeasurementUnit(key)}
                   </span>
                 </div>
               ))}
@@ -128,8 +117,6 @@ parametros_variables.forEach((parametro) => {
           </div>
         </div>
       )}
-
-
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import db from '@/lib/db';
+import { executeQuery } from '@/lib/db';
 import jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
 
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const result = await db.query('SELECT * FROM usuarios where email = ?', [
+    const result = await executeQuery('SELECT * FROM usuarios where email = ?', [
       email,
     ]);
     const users = result[0] as User[];

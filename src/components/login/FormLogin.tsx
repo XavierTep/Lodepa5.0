@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 export const FormLogin = () => {
-  const [email, setEmail] = useState("tracom@tracom.es")
-  const [password, setPassword] = useState("1234")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")

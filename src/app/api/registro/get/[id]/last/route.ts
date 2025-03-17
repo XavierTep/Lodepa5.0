@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
+import  { executeQuery } from "@/lib/db";
 
 // Función para parsear la fecha sin forzar zona horaria
 function parseUpdateTime(updateTime: string): number[] {
@@ -46,7 +46,7 @@ export async function GET(
     }
 
     // Ejecutar la consulta SQL usando el id del dispositivo como parámetro
-    const [rows]: any[] = await db.query(
+    const [rows]: any[] = await executeQuery(
       `SELECT r.*, d.id AS dispositivo_id, d.referencia, d.api_key_inbiot, d.n_dispositivo
         FROM registros r
         JOIN dispositivos d ON r.dispositivo = d.id

@@ -1,17 +1,22 @@
-import { useEffect, useState } from "react";
-import { InfoIcon, Fan, WormIcon, Thermometer } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+"use client"
+import { useEffect, useState, useRef } from "react"
+import type React from "react"
+
+import { InfoIcon, Fan, WormIcon, Thermometer } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { getStatusBatch } from "@/actions/dispositivo/umbrales"
 
 interface IndicadorProps {
-  titulo: string;
-  valor: number;
-  icono?: React.ReactNode;
-  info?: string;
+  titulo: string
+  valor: number
+  icono?: React.ReactNode
+  info?: string
+  color?: string // Color hexadecimal para el círculo
 }
 
-const Indicador = ({ titulo, valor, icono, info }: IndicadorProps) => {
-  const circumference = 2 * Math.PI * 40; // radio = 40
-  const strokeDashoffset = circumference - (valor / 100) * circumference;
+const Indicador = ({ titulo, valor, icono, info, color = "#10B981" }: IndicadorProps) => {
+  const circumference = 2 * Math.PI * 40 // radio = 40
+  const strokeDashoffset = circumference - (valor / 100) * circumference
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6 relative">
@@ -37,7 +42,7 @@ const Indicador = ({ titulo, valor, icono, info }: IndicadorProps) => {
               cx="64"
               cy="64"
               r="40"
-              stroke="#10B981"
+              stroke={color}
               strokeWidth="8"
               fill="none"
               strokeLinecap="round"
@@ -53,89 +58,112 @@ const Indicador = ({ titulo, valor, icono, info }: IndicadorProps) => {
         <h3 className="mt-4 text-gray-600 text-center">{titulo}</h3>
       </div>
     </div>
-  );
-};
-
-interface IndicadoresProps {
-  id?: string;
+  )
 }
 
-//const API_URL = process.env.REACT_APP_API_URL;
+interface IndicadoresProps {
+  id?: string
+}
 
-const Indicadores: React.FC<IndicadoresProps> = ({ id}) => {
-  const [indicadores, setIndicadores] = useState([
-    {
-      key: "iaq",
-      titulo: "Calidad de Aire Interior",
-      valor: 100,
-      info: "Índice de calidad del aire interior",
-    },
-    {
-      key: "covid19",
-      titulo: "Resistencia a Virus",
-      valor: 74,
-      icono: <WormIcon className="h-5 w-5" />,
-      info: "Capacidad de resistencia contra virus en el ambiente",
-    },
-    {
-      key: "ventilationIndicator",
-      titulo: "Eficacia de Ventilación",
-      valor: 85,
-      icono: <Fan className="h-5 w-5" />,
-      info: "Eficiencia del sistema de ventilación",
-    },
-    {
-      key: "thermalIndicator",
-      titulo: "Confort Térmico",
-      valor: 100,
-      icono: <Thermometer className="h-5 w-5" />,
-      info: "Nivel de confort térmico en el ambiente",
-    },
-  ]);
+// Datos iniciales de indicadores
+const indicadoresIniciales = [
+  {
+    key: "iaq",
+    titulo: "Calidad de Aire Interior",
+    valor: 100,
+    info: "Índice de calidad del aire interior",
+  },
+  {
+    key: "covid19",
+    titulo: "Resistencia a Virus",
+    valor: 74,
+    icono: <WormIcon className="h-5 w-5" /> as React.ReactNode,
+    info: "Capacidad de resistencia contra virus en el ambiente",
+    color: "#10B981",
+  },
+  {
+    key: "ventilation_indicator",
+    titulo: "Eficacia de Ventilación",
+    valor: 85,
+    icono: <Fan className="h-5 w-5" /> as React.ReactNode,
+    info: "Eficiencia del sistema de ventilación",
+    color: "#10B981",
+  },
+  {
+    key: "thermal_indicator",
+    titulo: "Confort Térmico",
+    valor: 100,
+    icono: <Thermometer className="h-5 w-5" /> as React.ReactNode,
+    info: "Nivel de confort térmico en el ambiente",
+    color: "#10B981",
+  },
+]
 
-  const [loading, setLoading] = useState(true);
-  const [updateTime, setUpdateTime] = useState<string | null>(null);
-  //const API_URL = import.meta.env.VITE_RUTA_API;
+const Indicadores: React.FC<IndicadoresProps> = ({ id }) => {
+  const [indicadores, setIndicadores] = useState(indicadoresIniciales)
+  const [loading, setLoading] = useState(true)
+  const [updateTime, setUpdateTime] = useState<string | null>(null)
+  const isFirstRender = useRef(true)
+
   useEffect(() => {
-    if (!id) return;
+    // Si no hay ID o no es la primera renderización, salir
+    if (!id || !isFirstRender.current) return
+
+    // Marcar que ya no es la primera renderización
+    isFirstRender.current = false
 
     const fetchIndicadores = async () => {
-      setLoading(true);
+      setLoading(true)
       try {
         const response = await fetch(`/api/registro/get/${id}/last`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
-        });
+        })
 
-        if (!response.ok) throw new Error("Error en la respuesta del servidor");
+        if (!response.ok) throw new Error("Error en la respuesta del servidor")
 
-        const data = await response.json();
+        const data = await response.json()
 
-        // **Tomar el último registro del array
-        const ultimoRegistro = data.at(-1);
+        // Tomar el último registro del array
+        const ultimoRegistro = data.at(-1)
 
         // Convertir updateTime en formato de fecha legible
         if (ultimoRegistro.updateTime && Array.isArray(ultimoRegistro.updateTime)) {
-          const [year, month, day, hours, minutes, seconds] = ultimoRegistro.updateTime;
-          setUpdateTime(new Date(year, month - 1, day, hours, minutes, seconds).toLocaleString());
+          const [year, month, day, hours, minutes, seconds] = ultimoRegistro.updateTime
+          setUpdateTime(new Date(year, month - 1, day, hours, minutes, seconds).toLocaleString())
         }
 
-        // **Actualizar solo los valores sin modificar la estructura original**
-        setIndicadores((prevIndicadores) =>
-          prevIndicadores.map((indicador) => ({
-            ...indicador,
-            valor: ultimoRegistro[indicador.key] ?? indicador.valor,
-          }))
-        );
-      } catch (error) {
-        console.error("Error obteniendo los indicadores:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+        // Crear una copia de los indicadores iniciales con los nuevos valores
+        const nuevosIndicadores = indicadoresIniciales.map((indicador) => ({
+          ...indicador,
+          valor: ultimoRegistro[indicador.key] ?? indicador.valor,
+        }))
 
-    fetchIndicadores();
-  }, [id]);
+        // Preparar datos para obtener los colores
+        const parametrosParaUmbrales = nuevosIndicadores.map((p) => ({
+          parametro: p.key,
+          valor: p.valor,
+        }))
+
+        // Obtener colores usando la acción del servidor
+        const colores = await getStatusBatch(parametrosParaUmbrales)
+
+        // Aplicar los colores a los indicadores
+        const nuevosIndicadoresConColor = nuevosIndicadores.map((indicador) => ({
+          ...indicador,
+          color: colores[indicador.key], // Usar directamente el color hexadecimal
+        }))
+
+        setIndicadores(nuevosIndicadoresConColor)
+      } catch (error) {
+        console.error("Error obteniendo los indicadores:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchIndicadores()
+  }, [id])
 
   return (
     <div className="bg-white rounded-lg">
@@ -150,17 +178,17 @@ const Indicadores: React.FC<IndicadoresProps> = ({ id}) => {
               valor={indicador.valor}
               icono={indicador.icono}
               info={indicador.info}
+              color={indicador.color}
             />
           ))
         )}
       </div>
       <div className="flex justify-end p-6 pt-0">
-        <span className="text-sm text-gray-500">
-          Última actualización: {updateTime ? updateTime : "No disponible"}
-        </span>
+        <span className="text-sm text-gray-500">Última actualización: {updateTime ? updateTime : "No disponible"}</span>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Indicadores;
+export default Indicadores
+

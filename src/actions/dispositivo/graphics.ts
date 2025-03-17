@@ -1,6 +1,6 @@
 "use server"
 
-import db from "@/lib/db"
+import  { executeQuery } from "@/lib/db"
 
 // Definición de tipos para los parámetros y respuesta
 export type ParameterType =
@@ -143,7 +143,7 @@ export async function getGraphicsData(
     console.log("Usando fechas personalizadas:", !!customStartDate && !!customEndDate)
 
     // Consulta a la base de datos utilizando la estructura de la tabla "registros"
-    const result = await db.query(
+    const result = await executeQuery(
       `
       SELECT 
         update_time, 
@@ -336,7 +336,7 @@ export async function getGraphicsData(
       // Si result no es un array pero es un objeto, podría ser un solo resultado
       console.log("Resultado es un objeto, intentando procesar como una sola fila")
 
-      const row = result as QueryResultRow
+      const row = result as unknown as QueryResultRow
 
       if ("update_time" in row && parameter in row) {
         const timestamp = row.update_time

@@ -1,14 +1,14 @@
-import { getSession } from "@/actions/auth/getSession";
-import { redirect } from "next/navigation";
+// import { getSession } from "@/actions/auth/getSession";
+// import { redirect } from "next/navigation";
 
 export default async function AdminPage() {
 
-  const userSession = await getSession()
-  const { rol } = userSession
+  // const userSession = await getSession()
+  // const { rol } = userSession
 
-  if (rol !== 1) {
-    redirect('/dashboard')
-  }
+  // if (rol !== 1) {
+  //   redirect('/dashboard')
+  // }
 
 
   return (

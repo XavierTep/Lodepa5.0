@@ -12,4 +12,21 @@ const db = mysql.createPool({
   queueLimit: 0, // Sin límite de cola
 });
 
+
+// Función para ejecutar una consulta y liberar la conexión después
+export async function executeQuery<T = any>(
+  query: string, 
+  params?: any[]
+): Promise<T[]>  {
+  const connection = await db.getConnection();
+  try {
+    const [rows] = await connection.query(query, params);
+    return [rows] as any[];
+  } catch (error) {
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
 export default db;

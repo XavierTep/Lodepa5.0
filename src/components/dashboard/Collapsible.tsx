@@ -1,19 +1,15 @@
+"use client";
 import { ChevronDown } from "lucide-react"
 import { useState } from "react"
 import BadgeList from "./BadgeList"
 
-export default function CollapsibleTree({ hospitals }: any) {
+export default function CollapsibleTree({ hospitals,rango }: {hospitals:any;rango:any}) {
   const [expandedHospitals, setExpandedHospitals] = useState<number[]>([])
-  const [expandedRooms, setExpandedRooms] = useState<number[]>([])
 
   const toggleHospital = (hospitalId: number) => {
     setExpandedHospitals((prev) =>
       prev.includes(hospitalId) ? prev.filter((id) => id !== hospitalId) : [...prev, hospitalId],
     )
-  }
-
-  const toggleRoom = (roomId: number) => {
-    setExpandedRooms((prev) => (prev.includes(roomId) ? prev.filter((id) => id !== roomId) : [...prev, roomId]))
   }
 
   return (
@@ -37,27 +33,16 @@ export default function CollapsibleTree({ hospitals }: any) {
             <div className="ml-6">
               {hospital.rooms.map((room: any) => (
                 <div key={room.id} className="mb-2">
-                  <button
-                    onClick={() => toggleRoom(room.id)}
-                    className="w-full flex items-center gap-2 p-2 text-md font-medium text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors"
-                  >
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform ${expandedRooms.includes(room.id) ? "rotate-0" : "-rotate-90"
-                        }`}
-                    />
-                    {room.name}
-                  </button>
-
                   {/* Devices Level */}
-                  {expandedRooms.includes(room.id) && (
                     <BadgeList
                       data={
                         hospitals
                           .flatMap((hospital: any) => hospital.rooms) // Obtener todas las habitaciones
                           .find((r: any) => r.id === room.id)?.devices ?? [] // Encontrar la habitación y asegurar que devices siempre sea un array
                       }
+                      n_sala={room.name}
+                      rango={rango}
                     />
-                  )}
                 </div>
               ))}
             </div>

@@ -1,5 +1,5 @@
-import { getSession } from '@/actions/auth/getSession';
-import { redirect } from 'next/navigation';
+// import { getSession } from '@/actions/auth/getSession';
+// import { redirect } from 'next/navigation';
 import Navbar from '../../components/general/navbar/Navbar';
 
 export default async function DashboardLayout({
@@ -8,10 +8,10 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
 
-  const userSession = await getSession();
-  if (!userSession) {
-    redirect('/login');
-  }
+  // const userSession = await getSession();
+  // if (!userSession) {
+  //   redirect('/login');
+  // }
 
 
   return (
@@ -20,6 +20,7 @@ export default async function DashboardLayout({
       <div className='container mx-auto px-4 py-3 flex items-center justify-between'>
         {children}
       </div>
+      
     </>
   );
 }
