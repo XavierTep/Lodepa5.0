@@ -1,5 +1,4 @@
 import { executeQuery } from "@/lib/db";
-import { getSession } from "../auth/getSession";
 
 function transformData(rows: any[]) {
     const hospitalsMap = new Map();
@@ -47,7 +46,9 @@ function transformData(rows: any[]) {
         thermalIndicator: parseFloat(row.thermal_indicator),
         ventilationIndicator: parseFloat(row.ventilation_indicator),
         co: (parseFloat(row.co)/1000),
-        formaldehyde: (parseFloat(row.formaldehyde)/1000),
+        formaldehyde: parseFloat(
+          (((parseFloat(row.formaldehyde) / 1000) * 0.85).toFixed(3))
+        ),
         no2: (parseFloat(row.no2)/1000),
         o3: (parseFloat(row.o3)/1000),
         pm1: parseFloat(row.pm1),
@@ -89,10 +90,8 @@ function transformData(rows: any[]) {
   }
   
   
-  export async function getListado() {
+  export async function getListado(id:number,rol: number) {
     try {
-  
-      const { id, rol } = await getSession();
       // Ejecutar la consulta SQL segun el Rol
       let rows: any;
       switch(rol){
@@ -109,7 +108,7 @@ function transformData(rows: any[]) {
                   FROM registros r2
                   WHERE r2.dispositivo = r.dispositivo
                 );`
-              ,[]);
+              );
           break;
         // Responsable de Hospital
         case 2:
@@ -164,3 +163,4 @@ function transformData(rows: any[]) {
       console.error('Error al obtener datos:', error);
     }
   }
+  

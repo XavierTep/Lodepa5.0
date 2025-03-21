@@ -1,5 +1,6 @@
 'use server';
 import  { executeQuery } from '@/lib/db';
+import { RowDataPacket } from 'mysql2/promise';
 
 interface Dispositivo {
   id: number;
@@ -9,6 +10,14 @@ interface Dispositivo {
   n_sala: string;
   id_hospital: number;
   n_hospital: string;
+}
+
+export interface DispositivoALL extends RowDataPacket {
+  id: number;
+  n_dispositivo: string;
+  sala: string;
+  referencia: string;
+  api_key_inbiot: string;
 }
 
 export const getDispositivo = async (id: string) => {
@@ -23,3 +32,29 @@ export const getDispositivo = async (id: string) => {
   
   return rows[0] as Dispositivo;
 };
+
+
+export async function getDispositivoALL(): Promise<DispositivoALL[]> {
+  try {
+    const [rows] = await executeQuery<DispositivoALL[] & RowDataPacket[]>(
+      `SELECT * FROM dispositivos;`
+    );
+    return rows;
+  } catch (error) {
+    console.error("Error al obtener roles:", error);
+    throw new Error("No se pudieron obtener los roles");
+  }
+}
+
+export async function getDispositivoByRef(ref: string): Promise<any> {
+  try {
+    const [rows] = await executeQuery(
+      `SELECT * FROM dispositivos WHERE referencia = ?`,
+      [ref]
+    );
+    return rows;
+  } catch (error) {
+    console.error("Error al obtener roles:", error);
+    throw new Error("No se pudieron obtener los roles");
+  }
+}

@@ -175,22 +175,22 @@ export function Grafica({ id }: GraficaProps) {
     setEndDate(calculatedEndDate)
   }, [timeRange])
 
-// Envolvemos loadThresholds en useCallback para mantener su referencia estable
-const loadThresholds = useCallback(async () => {
-  try {
-    const thresholdData = await getParameterThresholds(parameter)
-    setThresholds(thresholdData)
-  } catch (err) {
-    console.error("Error al cargar los umbrales:", err)
-  }
-}, [parameter])
+  // Envolvemos loadThresholds en useCallback para mantener su referencia estable
+  const loadThresholds = useCallback(async () => {
+    try {
+      const thresholdData = await getParameterThresholds(parameter)
+      setThresholds(thresholdData)
+    } catch (err) {
+      console.error("Error al cargar los umbrales:", err)
+    }
+  }, [parameter])
 
-// Cargar los umbrales cuando cambia el parámetro
-useEffect(() => {
-  loadThresholds()
-}, [loadThresholds])
+  // Cargar los umbrales cuando cambia el parámetro
+  useEffect(() => {
+    loadThresholds()
+  }, [loadThresholds])
 
-  
+
 
   // Actualizar fechas cuando cambia el rango de tiempo (solo si no se están usando fechas personalizadas)
   useEffect(() => {
@@ -219,15 +219,33 @@ useEffect(() => {
       // Convertir valores de ppb a ppm para formaldehído, O₃ y NO₂
       if (parametersToConvert.includes(parameter)) {
         // Convertir los valores de los datos
-        const convertedData = data.data.map((point) => ({
-          ...point,
-          value: point.value / 1000, // Convertir de ppb a ppm (dividir por 1000)
-        }))
+        const convertedData = data.data.map((point) => {
+          let newValue = point.value / 1000; // Conversión básica ppb -> ppm
+
+          if (data.parameter === "formaldehyde") {
+            newValue = newValue * 0.85; // Reducción adicional del 15% para formaldehído
+          }
+
+          // Limitar a 3 decimales
+          newValue = parseFloat(newValue.toFixed(3));
+
+          return {
+            ...point,
+            value: newValue,
+          };
+        });
 
         // Actualizar los valores estadísticos
-        const convertedMin = data.min / 1000
-        const convertedMax = data.max / 1000
-        const convertedMed = data.med / 1000
+        let convertedMin = data.min / 1000;
+        let convertedMax = data.max / 1000;
+        let convertedMed = data.med / 1000;
+
+        // Si es formaldehído, reducir un 15% adicional
+        if (data.parameter === "formaldehyde") {
+          convertedMin *= 0.85;
+          convertedMax *= 0.85;
+          convertedMed *= 0.85;
+        }
 
         // Actualizar la unidad a ppm
         const updatedData = {
@@ -551,42 +569,42 @@ useEffect(() => {
                     tickMargin={10}
                   />
                   <YAxis
-  domain={[
-    (dataMin: number) => {
-      // Ajustar el mínimo si min_warning está por debajo de la data
-      if (displayThresholds) {
-        return Math.min(dataMin, displayThresholds.min_warning);
-      }
-      return dataMin;
-    },
-    (dataMax: number) => {
-      // Ajustar el máximo si max_warning está por encima de la data
-      if (displayThresholds) {
-        return Math.max(dataMax, displayThresholds.max_warning);
-      }
-      return dataMax;
-    },
-  ]}
-/>
+                    domain={[
+                      (dataMin: number) => {
+                        // Ajustar el mínimo si min_warning está por debajo de la data
+                        if (displayThresholds) {
+                          return Math.min(dataMin, displayThresholds.min_warning);
+                        }
+                        return dataMin;
+                      },
+                      (dataMax: number) => {
+                        // Ajustar el máximo si max_warning está por encima de la data
+                        if (displayThresholds) {
+                          return Math.max(dataMax, displayThresholds.max_warning);
+                        }
+                        return dataMax;
+                      },
+                    ]}
+                  />
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
 
                   {/* Líneas de referencia para los umbrales */}
                   {displayThresholds && (
                     <>
                       <ReferenceLine
-  y={displayThresholds.min_warning}
-  stroke="#eab308"
-  strokeDasharray="3 3" 
-  ifOverflow="extendDomain"
-  label="Min Warning"
-/>
-<ReferenceLine
-  y={displayThresholds.max_warning}
-  stroke="#ef4444"
-  strokeDasharray="3 3"
-  ifOverflow="extendDomain"
-  label="Max Warning"
-/>
+                        y={displayThresholds.min_warning}
+                        stroke="#eab308"
+                        strokeDasharray="3 3"
+                        ifOverflow="extendDomain"
+                        label="Min Warning"
+                      />
+                      <ReferenceLine
+                        y={displayThresholds.max_warning}
+                        stroke="#ef4444"
+                        strokeDasharray="3 3"
+                        ifOverflow="extendDomain"
+                        label="Max Warning"
+                      />
                     </>
                   )}
 
