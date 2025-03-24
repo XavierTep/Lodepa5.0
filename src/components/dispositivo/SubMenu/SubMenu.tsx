@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import Indicadores from "../Indicadores/Indicadores"
+//import Indicadores from "../Indicadores/Indicadores"
 import "./Submenu.css"
 import Parametros from "../parametros/Parametros"
 import { Grafica } from "../grafica/Grafica"
@@ -14,7 +14,7 @@ interface SubmenuProps {
 
 const items = [
   { name: "Parámetros", path: "parametros" },
-  { name: "Indicadores", path: "indicadores" },
+ // { name: "Indicadores", path: "indicadores" },
   { name: "Gráfica", path: "grafica" },
 ]
 
@@ -33,7 +33,7 @@ const Submenu: React.FC<SubmenuProps> = ({ id }) => {
   // Selecciona el componente a renderizar según el tag seleccionado
   let ComponentToRender
   if (tag === "parametros") ComponentToRender = Parametros
-  else if (tag === "indicadores") ComponentToRender = Indicadores
+  //else if (tag === "indicadores") ComponentToRender = Indicadores
   else if (tag === "grafica") ComponentToRender = Grafica
   else ComponentToRender = DefaultComponent
 

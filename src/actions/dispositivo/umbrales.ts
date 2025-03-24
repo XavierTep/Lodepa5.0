@@ -31,7 +31,7 @@ export async function getMeasurementRanges(): Promise<Record<string, any>> {
 
   // Transforma los resultados en el objeto con la estructura deseada
   const measurementRanges = rows.reduce((acc: any, row: any) => {
-    acc[row.parametro] = {
+    acc[row.parametro.toLowerCase()] = {
       good: { min: row.min_good, max: row.max_good },
       warning: { min: row.min_warning, max: row.max_warning },
     };

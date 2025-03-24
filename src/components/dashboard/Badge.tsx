@@ -3,7 +3,7 @@ import Link from "next/link"
 
 
 export default function Badge({ data, n_salaBadge, rango}: {data: any;n_salaBadge:string ;rango:any}) {
-  const { dispositivo, iaq, updateTime, ...measurements } = data
+  const { dispositivo, updateTime, ...measurements } = data //he quitado el iaq
 
 
   const getStatus = (name: string, value: any): string => {
@@ -33,10 +33,10 @@ export default function Badge({ data, n_salaBadge, rango}: {data: any;n_salaBadg
     })
   }
 
-  const color = getStatus("iaq", iaq)
+  //const color = getStatus("iaq", iaq)
   const radius = 18
   const circumference = 2 * Math.PI * radius
-  const offset = circumference - (iaq / 100) * circumference
+  //const offset = circumference - (iaq / 100) * circumference
 
   const isRuning = (dateArray: number[]) => {
     const givenDate = new Date(dateArray[0], dateArray[1] - 1, dateArray[2], dateArray[3], dateArray[4], dateArray[5]);
@@ -61,15 +61,15 @@ export default function Badge({ data, n_salaBadge, rango}: {data: any;n_salaBadg
                 cy="22"
                 r={radius}
                 fill="transparent"
-                stroke={isRuning(updateTime) ? color : "#626567"}
+                stroke={isRuning(updateTime) ? "#22c55e" : "#626567"}
                 strokeWidth="2"
                 strokeDasharray={circumference}
-                strokeDashoffset={isRuning(updateTime) ? offset : 0}
+                strokeDashoffset={isRuning(updateTime) ? 0: 0}
                 strokeLinecap="round"
                 transform="rotate(-90 22 22)"
               />
-              <text x="22" y="22" textAnchor="middle" dy=".3em" fontSize="10" fontWeight="bold" fill={isRuning(updateTime) ? color : "#626567"}>
-                {isRuning(updateTime) ? iaq : "OFF"}
+              <text x="22" y="22" textAnchor="middle" dy=".3em" fontSize="10" fontWeight="bold" fill={isRuning(updateTime) ? "#22c55e" : "#626567"}>
+                {isRuning(updateTime) ? "ON" : "OFF"}
               </text>
             </svg>
           </div>
