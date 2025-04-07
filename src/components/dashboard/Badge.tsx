@@ -3,15 +3,9 @@ import { formatMeasurementName, getMeasurementUnit } from "@/lib/status-ranges"
 import Link from "next/link"
 
 
-<<<<<<< HEAD
 export default function Badge({ data, rango }: { data: ListadoSalas; rango: any }) {
   const { n_sala, id_dispositivo, n_dispositivo, updateTime } = data
   const updateTimeDate = new Date(updateTime);
-=======
-export default function Badge({ data, n_salaBadge, rango}: {data: any;n_salaBadge:string ;rango:any}) {
-  const { dispositivo, updateTime, ...measurements } = data //he quitado el iaq
-
->>>>>>> 915d3132da7852ad6e6eb1e6d35c2378aa245bab
 
   const getStatus = (name: string, value: any): string => {
     const ranges = rango[name as keyof typeof rango];
@@ -39,18 +33,11 @@ export default function Badge({ data, n_salaBadge, rango}: {data: any;n_salaBadg
     });
   };
 
-<<<<<<< HEAD
 
   // const color = getStatus("iaq", iaq)
   const radius = 18
   const circumference = 2 * Math.PI * radius
   // const offset = circumference - (iaq / 100) * circumference
-=======
-  //const color = getStatus("iaq", iaq)
-  const radius = 18
-  const circumference = 2 * Math.PI * radius
-  //const offset = circumference - (iaq / 100) * circumference
->>>>>>> 915d3132da7852ad6e6eb1e6d35c2378aa245bab
 
   const isRuning = (givenDate: Date | string | number) => {
     // Convertir a Date si no lo es
@@ -77,11 +64,7 @@ export default function Badge({ data, n_salaBadge, rango}: {data: any;n_salaBadg
                 stroke={isRuning(updateTime) ? "#22c55e" : "#626567"}
                 strokeWidth="2"
                 strokeDasharray={circumference}
-<<<<<<< HEAD
                 strokeDashoffset={isRuning(updateTime) ? 0 : 0}
-=======
-                strokeDashoffset={isRuning(updateTime) ? 0: 0}
->>>>>>> 915d3132da7852ad6e6eb1e6d35c2378aa245bab
                 strokeLinecap="round"
                 transform="rotate(-90 22 22)"
               />
