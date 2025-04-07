@@ -222,11 +222,16 @@ export function Grafica({ id }: GraficaProps) {
         const convertedData = data.data.map((point) => {
           let newValue = point.value / 1000; // Conversión básica ppb -> ppm
 
+<<<<<<< HEAD
           if (parameter === "vocs") {
             newValue = newValue * 300; // Aplicar reducción del 15%
           }
           if (parameter === "formaldehyde") {
             newValue = newValue * 0.85; // Aplicar reducción del 15%
+=======
+          if (data.parameter === "formaldehyde") {
+            newValue = newValue * 0.85; // Reducción adicional del 15% para formaldehído
+>>>>>>> 915d3132da7852ad6e6eb1e6d35c2378aa245bab
           }
 
           // Limitar a 3 decimales
@@ -241,6 +246,7 @@ export function Grafica({ id }: GraficaProps) {
         // Actualizar los valores estadísticos
         let convertedMin = data.min / 1000;
         let convertedMax = data.max / 1000;
+<<<<<<< HEAD
         let  convertedMed = data.med / 1000;
 
         if (parameter === "vocs") {
@@ -255,6 +261,16 @@ export function Grafica({ id }: GraficaProps) {
         }
         // Si es formaldehído, reducir un 15% adicional
 
+=======
+        let convertedMed = data.med / 1000;
+
+        // Si es formaldehído, reducir un 15% adicional
+        if (data.parameter === "formaldehyde") {
+          convertedMin *= 0.85;
+          convertedMax *= 0.85;
+          convertedMed *= 0.85;
+        }
+>>>>>>> 915d3132da7852ad6e6eb1e6d35c2378aa245bab
 
         // Actualizar la unidad a ppm
         const updatedData = {

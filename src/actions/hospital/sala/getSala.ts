@@ -8,12 +8,15 @@ export interface Sala extends RowDataPacket {
   n_sala: string;
 }
 
+<<<<<<< HEAD
 export interface Salas extends RowDataPacket {
   id: number;
   n_sala: string;
   hospital: number;
 }
 
+=======
+>>>>>>> 915d3132da7852ad6e6eb1e6d35c2378aa245bab
 export interface SalasDispositivos extends RowDataPacket {
   id_sala: number;
   n_sala: string;
@@ -62,6 +65,7 @@ export async function getSalaYDispositivoByHospital(id:number): Promise<SalasDis
     console.error("Error al obtener roles:", error);
     throw new Error("No se pudieron obtener los roles");
   }
+<<<<<<< HEAD
 }
 
 export async function getSalaByUser(id:number): Promise<Salas[]> {
@@ -89,4 +93,6 @@ export async function getSalaAll(): Promise<Salas[]> {
     console.error("Error al obtener roles:", error);
     throw new Error("No se pudieron obtener los roles");
   }
+=======
+>>>>>>> 915d3132da7852ad6e6eb1e6d35c2378aa245bab
 }

@@ -47,6 +47,7 @@ export async function getHospitalAllyNumeroSalas(): Promise<any[]> {
     throw new Error("No se pudieron obtener los roles");
   }
 }
+<<<<<<< HEAD
 
 export async function getHospitalByUser(userID:number): Promise<Hospital[]> {
   try {
@@ -61,3 +62,5 @@ export async function getHospitalByUser(userID:number): Promise<Hospital[]> {
     throw new Error("No se pudieron obtener los roles");
   }
 }
+=======
+>>>>>>> 915d3132da7852ad6e6eb1e6d35c2378aa245bab
