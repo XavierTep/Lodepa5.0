@@ -166,7 +166,7 @@ export const getMeasurementUnit = (name: string): string => {
     temperature: '°C',
     humidity: '%',
     co2: 'ppm',
-    vocs: 'ppb',
+    vocs: 'ppm',
     pm10: 'µg/m³',
     pm25: 'µg/m³',
     covid19: '%',
