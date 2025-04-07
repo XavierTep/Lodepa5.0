@@ -1,22 +1,44 @@
 "use client";
-import { ChevronDown } from "lucide-react"
-import { useState } from "react"
-import BadgeList from "./BadgeList"
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
+import BadgeList from "./BadgeList";
+import { Hospital } from "@/actions/hospital/getHospital";
+import { ListadoSalas } from "@/actions/hospital/sala/getListadoSalas";
 
-export default function CollapsibleTree({ hospitals,rango }: {hospitals:any;rango:any}) {
-  const [expandedHospitals, setExpandedHospitals] = useState<number[]>([])
+export default function CollapsibleTree({ hospitals, rango, id, rol }: { hospitals: Hospital[]; rango: any; id: number; rol: number }) {
+  const [expandedHospitals, setExpandedHospitals] = useState<number[]>([]);
+  // Permitir null para indicar que se está cargando
+  const [roomsData, setRoomsData] = useState<{ [key: number]: ListadoSalas[] | null }>({});
 
-  const toggleHospital = (hospitalId: number) => {
-    setExpandedHospitals((prev) =>
-      prev.includes(hospitalId) ? prev.filter((id) => id !== hospitalId) : [...prev, hospitalId],
-    )
-  }
+  const toggleHospital = async (hospitalId: number) => {
+    if (expandedHospitals.includes(hospitalId)) {
+      // Contraer hospital: removemos el ID
+      setExpandedHospitals((prev) => prev.filter((id) => id !== hospitalId));
+    } else {
+      // Expandir hospital inmediatamente y marcar que se están cargando las salas
+      setExpandedHospitals((prev) => [...prev, hospitalId]);
+      setRoomsData((prev) => ({ ...prev, [hospitalId]: null }));
+
+      try {
+        const res = await fetch(`/api/hospital/listadoSala?id_hospital=${hospitalId}&id=${id}&rol=${rol}`);
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("Error en API:", res.status, errorText);
+          throw new Error("Error al obtener los datos de las salas");
+        }
+        const data = await res.json();
+        setRoomsData((prev) => ({ ...prev, [hospitalId]: data }));
+      } catch (error) {
+        console.error("Error fetching rooms:", error);
+      }
+    }
+  };
 
   return (
     <>
-      {hospitals.map((hospital: any) => (
+      {hospitals.map((hospital: Hospital) => (
         <div key={hospital.id} className="mb-2">
-          {/* Hospital Level */}
+          {/* Nivel del Hospital */}
           <button
             onClick={() => toggleHospital(hospital.id)}
             className="w-full flex items-center gap-2 p-3 text-lg font-semibold text-neutral-800 hover:bg-neutral-100 rounded-lg transition-colors"
@@ -25,31 +47,23 @@ export default function CollapsibleTree({ hospitals,rango }: {hospitals:any;rang
               className={`w-5 h-5 transition-transform ${expandedHospitals.includes(hospital.id) ? "rotate-0" : "-rotate-90"
                 }`}
             />
-            {hospital.name}
+            {hospital.hospital}
           </button>
 
-          {/* Rooms Level */}
+          {/* Nivel de Salas */}
           {expandedHospitals.includes(hospital.id) && (
             <div className="ml-6">
-              {hospital.rooms.map((room: any) => (
-                <div key={room.id} className="mb-2">
-                  {/* Devices Level */}
-                    <BadgeList
-                      data={
-                        hospitals
-                          .flatMap((hospital: any) => hospital.rooms) // Obtener todas las habitaciones
-                          .find((r: any) => r.id === room.id)?.devices ?? [] // Encontrar la habitación y asegurar que devices siempre sea un array
-                      }
-                      n_sala={room.name}
-                      rango={rango}
-                    />
+              {roomsData[hospital.id] === null ? (
+                <p>Cargando salas...</p>
+              ) : roomsData[hospital.id] ? (
+                <div className="mb-2">
+                  <BadgeList data={roomsData[hospital.id]!} rango={rango} />
                 </div>
-              ))}
+              ) : null}
             </div>
           )}
         </div>
       ))}
     </>
-  )
+  );
 }
-

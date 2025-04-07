@@ -82,8 +82,10 @@ export async function GET(
         temperature: parseFloat(row.temperature),
         humidity: parseFloat(row.humidity),
         co2: parseFloat(row.co2),
-        formaldehyde: (parseFloat(row.formaldehyde)/1000),
-        vocs: parseFloat(row.vocs),
+        formaldehyde: parseFloat(
+          (((parseFloat(row.formaldehyde) / 1000) * 0.85).toFixed(3))
+        ),
+        vocs: parseFloat((parseFloat(row.vocs)* 0.3).toFixed(3)),
         pm1: parseFloat(row.pm1),
         pm4: parseFloat(row.pm4),
         pm10: parseFloat(row.pm10),

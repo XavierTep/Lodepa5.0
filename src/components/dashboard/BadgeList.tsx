@@ -1,13 +1,12 @@
 
+import { ListadoSalas } from "@/actions/hospital/sala/getListadoSalas";
 import Badge from "./Badge"
 
-
-
-export default function BadgeList({ data, n_sala, rango}: {data:any ; n_sala:string; rango:any}) {
+export default function BadgeList({ data, rango }: { data: ListadoSalas[]; rango: any }) {
   return (
-    <div className="flex flex-wrap gap-6 p-3 w-full max-w-[95%] mx-auto justify-start items-start">
-      {data.map((measurement: any) => (
-        <Badge key={measurement.id} data={measurement} n_salaBadge={n_sala} rango={rango}/>
+    <div className="flex flex-col flex-wrap gap-6 p-3 w-full max-w-[95%] mx-auto justify-start items-start">
+      {data.map((measurement: ListadoSalas) => (
+        <Badge key={measurement.id_sala} data={measurement} rango={rango} />
       ))}
     </div>
   )

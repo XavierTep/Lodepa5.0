@@ -46,7 +46,10 @@ export const FormLogin = () => {
 
     <div className=" bg-gray-100 rounded-lg shadow-2xl w-full max-w-md p-6 flex flex-col justify-center items-center space-y-6">
       <Image src="/cropped-LOGO-LODEPA-sin-fondo.png" alt="Logo" width={144} height={144} className="w-48" />
-
+      {isLoading ? (
+          <p className="text-center animate-pulse font-semibold">Iniciando sesión...</p>
+      ) : (
+        <>
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold">Iniciar Sesión</h2>
         <p className="text-gray-600">Ingresa tus credenciales para acceder</p>
@@ -104,6 +107,8 @@ export const FormLogin = () => {
           {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
         </button>
       </form>
+      </>
+      )}
     </div>
 
   )

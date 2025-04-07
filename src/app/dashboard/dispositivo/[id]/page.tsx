@@ -1,7 +1,9 @@
 import { getDispositivo } from "@/actions/dispositivo/getDispositivo";
 import Submenu from "@/components/dispositivo/SubMenu/SubMenu";
+import Loading from "@/components/loading/Loading";
 import { CircleArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 //import dynamic from "next/dynamic";
 
 // Carga dinámica del componente Submenu para deshabilitar SSR
@@ -26,7 +28,9 @@ export default async function DispositivoPage({ params }: any) {
         </div>
         {/* Pasa el parámetro id al componente Submenu */}
       </div>
+      <Suspense fallback={<Loading/>}>     
       <Submenu id={id} />
+      </Suspense>
     </div>
   );
 }

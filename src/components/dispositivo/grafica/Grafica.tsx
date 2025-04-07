@@ -43,7 +43,7 @@ const parameterOptions = [
 ]
 
 // Parámetros que necesitan conversión de ppb a ppm (dividir por 1000)
-const parametersToConvert = ["formaldehyde", "o3", "no2"]
+const parametersToConvert = ["formaldehyde", "o3", "no2","vocs"]
 
 // Opciones para el selector de rango de tiempo
 const timeRangeOptions = [
@@ -175,22 +175,22 @@ export function Grafica({ id }: GraficaProps) {
     setEndDate(calculatedEndDate)
   }, [timeRange])
 
-// Envolvemos loadThresholds en useCallback para mantener su referencia estable
-const loadThresholds = useCallback(async () => {
-  try {
-    const thresholdData = await getParameterThresholds(parameter)
-    setThresholds(thresholdData)
-  } catch (err) {
-    console.error("Error al cargar los umbrales:", err)
-  }
-}, [parameter])
+  // Envolvemos loadThresholds en useCallback para mantener su referencia estable
+  const loadThresholds = useCallback(async () => {
+    try {
+      const thresholdData = await getParameterThresholds(parameter)
+      setThresholds(thresholdData)
+    } catch (err) {
+      console.error("Error al cargar los umbrales:", err)
+    }
+  }, [parameter])
 
-// Cargar los umbrales cuando cambia el parámetro
-useEffect(() => {
-  loadThresholds()
-}, [loadThresholds])
+  // Cargar los umbrales cuando cambia el parámetro
+  useEffect(() => {
+    loadThresholds()
+  }, [loadThresholds])
 
-  
+
 
   // Actualizar fechas cuando cambia el rango de tiempo (solo si no se están usando fechas personalizadas)
   useEffect(() => {
@@ -219,15 +219,42 @@ useEffect(() => {
       // Convertir valores de ppb a ppm para formaldehído, O₃ y NO₂
       if (parametersToConvert.includes(parameter)) {
         // Convertir los valores de los datos
-        const convertedData = data.data.map((point) => ({
-          ...point,
-          value: point.value / 1000, // Convertir de ppb a ppm (dividir por 1000)
-        }))
+        const convertedData = data.data.map((point) => {
+          let newValue = point.value / 1000; // Conversión básica ppb -> ppm
+
+          if (parameter === "vocs") {
+            newValue = newValue * 300; // Aplicar reducción del 15%
+          }
+          if (parameter === "formaldehyde") {
+            newValue = newValue * 0.85; // Aplicar reducción del 15%
+          }
+
+          // Limitar a 3 decimales
+          newValue = parseFloat(newValue.toFixed(3));
+
+          return {
+            ...point,
+            value: newValue,
+          };
+        });
 
         // Actualizar los valores estadísticos
-        const convertedMin = data.min / 1000
-        const convertedMax = data.max / 1000
-        const convertedMed = data.med / 1000
+        let convertedMin = data.min / 1000;
+        let convertedMax = data.max / 1000;
+        let  convertedMed = data.med / 1000;
+
+        if (parameter === "vocs") {
+          convertedMin = convertedMin * 300; // Aplicar reducción del 15%
+          convertedMax = convertedMax * 300; // Aplicar reducción del 15%
+          convertedMed = convertedMed * 300; // Aplicar reducción del 15%
+        }
+        if (parameter === "formaldehyde") {
+          convertedMin = convertedMin * 0.85; // Aplicar reducción del 15%
+          convertedMax = convertedMax * 0.85; // Aplicar reducción del 15%
+          convertedMed = convertedMed * 0.85; // Aplicar reducción del 15%
+        }
+        // Si es formaldehído, reducir un 15% adicional
+
 
         // Actualizar la unidad a ppm
         const updatedData = {
@@ -551,42 +578,42 @@ useEffect(() => {
                     tickMargin={10}
                   />
                   <YAxis
-  domain={[
-    (dataMin: number) => {
-      // Ajustar el mínimo si min_warning está por debajo de la data
-      if (displayThresholds) {
-        return Math.min(dataMin, displayThresholds.min_warning);
-      }
-      return dataMin;
-    },
-    (dataMax: number) => {
-      // Ajustar el máximo si max_warning está por encima de la data
-      if (displayThresholds) {
-        return Math.max(dataMax, displayThresholds.max_warning);
-      }
-      return dataMax;
-    },
-  ]}
-/>
+                    domain={[
+                      (dataMin: number) => {
+                        // Ajustar el mínimo si min_warning está por debajo de la data
+                        if (displayThresholds) {
+                          return Math.min(dataMin, displayThresholds.min_warning);
+                        }
+                        return dataMin;
+                      },
+                      (dataMax: number) => {
+                        // Ajustar el máximo si max_warning está por encima de la data
+                        if (displayThresholds) {
+                          return Math.max(dataMax, displayThresholds.max_warning);
+                        }
+                        return dataMax;
+                      },
+                    ]}
+                  />
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
 
                   {/* Líneas de referencia para los umbrales */}
                   {displayThresholds && (
                     <>
                       <ReferenceLine
-  y={displayThresholds.min_warning}
-  stroke="#eab308"
-  strokeDasharray="3 3" 
-  ifOverflow="extendDomain"
-  label="Min Warning"
-/>
-<ReferenceLine
-  y={displayThresholds.max_warning}
-  stroke="#ef4444"
-  strokeDasharray="3 3"
-  ifOverflow="extendDomain"
-  label="Max Warning"
-/>
+                        y={displayThresholds.min_warning}
+                        stroke="#eab308"
+                        strokeDasharray="3 3"
+                        ifOverflow="extendDomain"
+                        label="Min Warning"
+                      />
+                      <ReferenceLine
+                        y={displayThresholds.max_warning}
+                        stroke="#ef4444"
+                        strokeDasharray="3 3"
+                        ifOverflow="extendDomain"
+                        label="Max Warning"
+                      />
                     </>
                   )}
 
@@ -610,7 +637,12 @@ useEffect(() => {
                                 <span className="text-muted-foreground">{graphData.parameter}</span>
                               </div>
                               <div className="font-medium">
-                                {parametersToConvert.includes(parameter) ? value.toFixed(3) : value.toFixed(1)}{" "}
+                                {parameter === "vocs"
+                                  ? value.toFixed(1)
+                                  : parametersToConvert.includes(parameter)
+                                    ? value.toFixed(3)
+                                    : value.toFixed(1)
+                                }{" "}
                                 {graphData.unit}
                               </div>
                             </div>
