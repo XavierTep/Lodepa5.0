@@ -46,7 +46,7 @@ const parametrosIniciales = [
   {
     key: "vocs",
     valor: 104,
-    unidad: "INDEX",
+    unidad: "ppm",
     nombre: "TVOC",
     info: "Índice de compuestos orgánicos volátiles totales",
   },

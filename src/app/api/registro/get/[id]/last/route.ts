@@ -85,7 +85,7 @@ export async function GET(
         formaldehyde: parseFloat(
           (((parseFloat(row.formaldehyde) / 1000) * 0.85).toFixed(3))
         ),
-        vocs: parseFloat((parseFloat(row.vocs)* 0.3).toFixed(3)),
+        vocs: (parseFloat(row.vocs)/1000),
         pm1: parseFloat(row.pm1),
         pm4: parseFloat(row.pm4),
         pm10: parseFloat(row.pm10),

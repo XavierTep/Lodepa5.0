@@ -28,7 +28,7 @@ const parameterOptions = [
   { value: "humidity", label: "Humedad (%)" },
   { value: "co2", label: "CO₂ (ppm)" },
   { value: "formaldehyde", label: "Formaldehído (ppm)" }, // Cambiado de ppb a ppm
-  { value: "vocs", label: "TVOC (INDEX)" },
+  { value: "vocs", label: "TVOC (ppm)" },
   { value: "pm1", label: "PM1.0 (μg/m³)" },
   { value: "pm25", label: "PM2.5 (μg/m³)" },
   { value: "pm4", label: "PM4.0 (μg/m³)" },
@@ -222,9 +222,9 @@ export function Grafica({ id }: GraficaProps) {
         const convertedData = data.data.map((point) => {
           let newValue = point.value / 1000; // Conversión básica ppb -> ppm
 
-          if (parameter === "vocs") {
+          /*if (parameter === "vocs") {
             newValue = newValue * 300; // Aplicar reducción del 15%
-          }
+          }*/
           if (parameter === "formaldehyde") {
             newValue = newValue * 0.85; // Aplicar reducción del 15%
           }
@@ -243,11 +243,11 @@ export function Grafica({ id }: GraficaProps) {
         let convertedMax = data.max / 1000;
         let  convertedMed = data.med / 1000;
 
-        if (parameter === "vocs") {
+        /*if (parameter === "vocs") {
           convertedMin = convertedMin * 300; // Aplicar reducción del 15%
           convertedMax = convertedMax * 300; // Aplicar reducción del 15%
           convertedMed = convertedMed * 300; // Aplicar reducción del 15%
-        }
+        }*/
         if (parameter === "formaldehyde") {
           convertedMin = convertedMin * 0.85; // Aplicar reducción del 15%
           convertedMax = convertedMax * 0.85; // Aplicar reducción del 15%
@@ -521,7 +521,7 @@ export function Grafica({ id }: GraficaProps) {
           </span>
         </div>
 
-        {/* Indicadores de valores */}
+      {/* Indicadores de valores */}
         {graphData && (
           <div className="flex flex-wrap gap-3 mb-6">
             <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
@@ -578,23 +578,30 @@ export function Grafica({ id }: GraficaProps) {
                     tickMargin={10}
                   />
                   <YAxis
-                    domain={[
-                      (dataMin: number) => {
-                        // Ajustar el mínimo si min_warning está por debajo de la data
-                        if (displayThresholds) {
-                          return Math.min(dataMin, displayThresholds.min_warning);
-                        }
-                        return dataMin;
-                      },
-                      (dataMax: number) => {
-                        // Ajustar el máximo si max_warning está por encima de la data
-                        if (displayThresholds) {
-                          return Math.max(dataMax, displayThresholds.max_warning);
-                        }
-                        return dataMax;
-                      },
-                    ]}
-                  />
+  domain={[
+    (dataMin: number) => {
+      if (displayThresholds) {
+        const baseMin = Math.min(dataMin, displayThresholds.min_warning);
+        // Si la diferencia entre dataMin y min_warning es muy grande,
+        // podrías ignorar o reducir el peso de min_warning para no "aplastar" los datos.
+        // Aquí agregamos un padding mínimo, por ejemplo 0.1,
+        // o adaptado a la escala real de tu parámetro:
+        const padding = Math.max(Math.abs(baseMin) * 0.1, 1);
+        return baseMin - padding;
+      }
+      return dataMin;
+    },
+    (dataMax: number) => {
+      if (displayThresholds) {
+        const baseMax = Math.max(dataMax, displayThresholds.max_warning);
+        // Similar al mínimo, se añade un padding calculado o fijo:
+        const padding = Math.max(Math.abs(baseMax) * 0.1, 1);
+        return baseMax + padding;
+      }
+      return dataMax;
+    },
+  ]}
+/>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
 
                   {/* Líneas de referencia para los umbrales */}

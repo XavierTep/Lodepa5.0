@@ -42,7 +42,7 @@ function transformData(rows: any[]) {
         pm10: parseFloat(row.pm10),
         pm25: parseFloat(row.pm25),
         temperature: parseFloat(row.temperature),
-        vocs: parseFloat((parseFloat(row.vocs)* 0.3).toFixed(3)),
+        vocs: (parseFloat(row.vocs)/1000),
         thermalIndicator: parseFloat(row.thermal_indicator),
         ventilationIndicator: parseFloat(row.ventilation_indicator),
         co: (parseFloat(row.co)/1000),
