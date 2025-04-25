@@ -45,7 +45,7 @@ export default function Badge({ data, rango }: { data: ListadoSalas; rango: any 
     const now = new Date();
     const differenceInMs = now.getTime() - date.getTime();
     const differenceInMinutes = differenceInMs / (1000 * 60); // Convertir a minutos
-    return differenceInMinutes <= 30;
+    return differenceInMinutes <= 360;
   };
 
   return (
