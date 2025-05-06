@@ -6,6 +6,7 @@ import type React from "react"
 import "./Submenu.css"
 import Parametros from "../parametros/Parametros"
 import { Grafica } from "../grafica/Grafica"
+import Informe from "../informe/Informe"
 import { Suspense, useState } from "react"
 
 interface SubmenuProps {
@@ -16,6 +17,7 @@ const items = [
   { name: "Parámetros", path: "parametros" },
  // { name: "Indicadores", path: "indicadores" },
   { name: "Gráfica", path: "grafica" },
+  { name: "Informe", path: "informe" },
 ]
 
 const Submenu: React.FC<SubmenuProps> = ({ id }) => {
@@ -35,6 +37,7 @@ const Submenu: React.FC<SubmenuProps> = ({ id }) => {
   if (tag === "parametros") ComponentToRender = Parametros
   //else if (tag === "indicadores") ComponentToRender = Indicadores
   else if (tag === "grafica") ComponentToRender = Grafica
+  else if (tag === "informe") ComponentToRender = Informe
   else ComponentToRender = DefaultComponent
 
   // Determinar si el componente actual es Grafica para aplicar estilos específicos

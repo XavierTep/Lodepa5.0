@@ -4,6 +4,10 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/lib"            // <-- Aquí están tus declaraciones manuales
+    ],
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -22,6 +26,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts","src/lib/**/*.d.ts"],
   "exclude": ["node_modules"]
 }
