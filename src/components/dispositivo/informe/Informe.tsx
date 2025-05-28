@@ -1,9 +1,8 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState } from "react"
 import { Calendar, Download, Loader2 } from "lucide-react"
+import { toast } from 'react-hot-toast'
 
 interface InformeProps {
   id: string
@@ -12,44 +11,66 @@ interface InformeProps {
 const Informe: React.FC<InformeProps> = ({ id }) => {
   const [loading, setLoading] = useState(false)
 
-  // Fecha de hoy en "YYYY-MM-DD"
-  const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  // Helper para formatear fecha local "YYYY-MM-DD"
+  const formatDateLocal = (date: Date) => {
+    const pad = (n: number) => n.toString().padStart(2, "0")
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  }
 
-  // Fecha de mañana: clona 'today' y suma 1 día
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+  // Fecha de hoy
+  const today = new Date()
+
+  // Inicio: primer día del mes anterior a las 00:00
+  const prevFirstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+  const defaultInicio = `${formatDateLocal(prevFirstDay)}T00:00`
+
+  // Fin: último día del mes anterior a las 23:59
+  const prevLastDay = new Date(today.getFullYear(), today.getMonth(), 0)
+  const defaultFin = `${formatDateLocal(prevLastDay)}T23:59`
 
   // Parámetros dinámicos
   const dispositivo = Number(id)
-  const [inicio, setInicio] = useState<string>(todayStr)
-  const [fin, setFin] = useState<string>(tomorrowStr)
+  const [inicio, setInicio] = useState<string>(defaultInicio)
+  const [fin, setFin] = useState<string>(defaultFin)
 
   const generateReport = async () => {
+    // Validación: inicio no puede ser mayor que fin
+    if (new Date(inicio) > new Date(fin)) {
+      toast.error('La fecha de inicio debe ser anterior a la fecha de fin')
+      return
+    }
+
     setLoading(true)
     try {
-      // Construye la ruta dinámica con las fechas del formulario
-      const url = `/api/informe/${dispositivo}/${inicio}/${fin}`
+      const url = `/api/informe/${dispositivo}/${encodeURIComponent(inicio)}/${encodeURIComponent(fin)}`
       const response = await fetch(url)
 
       if (!response.ok) {
         throw new Error("Error al generar el informe")
       }
+      const header = response.headers.get("Content-Disposition") || ""
+      let filename = header.split("filename=")[1] || "informe.xlsx"
+      filename = filename.trim().replace(/^"|"$/g, "")
+
+      if (filename === "No_hay_registros.xlsx") {
+        toast.error('No se encontraron datos para generar el informe')
+        return
+      }
 
       const blob = await response.blob()
-
-      // Crear URL para descarga
       const downloadUrl = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = downloadUrl
-      a.download = `informe_${dispositivo}_${inicio}_${fin}.xlsx`
+      
+      a.download = filename
+
       document.body.appendChild(a)
       a.click()
       a.remove()
       window.URL.revokeObjectURL(downloadUrl)
     } catch (error) {
       console.error("Error:", error)
+      toast.error('Ocurrió un error al generar el informe')
     } finally {
       setLoading(false)
     }
@@ -57,10 +78,8 @@ const Informe: React.FC<InformeProps> = ({ id }) => {
 
   return (
     <div className="max-w-6xl mx-auto">
-      {/* Main content */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Generar Informe</h2>
-
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -79,7 +98,7 @@ const Informe: React.FC<InformeProps> = ({ id }) => {
                 </div>
                 <input
                   id="fecha-inicio"
-                  type="date"
+                  type="datetime-local"
                   value={inicio}
                   onChange={(e) => setInicio(e.target.value)}
                   required
@@ -98,7 +117,7 @@ const Informe: React.FC<InformeProps> = ({ id }) => {
                 </div>
                 <input
                   id="fecha-fin"
-                  type="date"
+                  type="datetime-local"
                   value={fin}
                   onChange={(e) => setFin(e.target.value)}
                   required
@@ -112,9 +131,8 @@ const Informe: React.FC<InformeProps> = ({ id }) => {
             <button
               type="submit"
               disabled={loading}
-              className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white ${
-                loading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
-              } transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+              className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white ${loading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+                } transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
             >
               {loading ? (
                 <>
@@ -130,20 +148,6 @@ const Informe: React.FC<InformeProps> = ({ id }) => {
             </button>
           </div>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          {/* <p className="text-sm text-gray-500 mt-6">
-            Última actualización:{" "}
-            {new Date().toLocaleDateString("es-ES", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            })}
-          </p> */}
-        </div>
       </div>
     </div>
   )
