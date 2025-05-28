@@ -86,7 +86,6 @@ function formatDateTime(dateString: string): string {
 // Función para formatear hora para el eje X
 function formatXAxisTime(dateString: string, timeRange: TimeRange): string {
   const date = new Date(dateString)
-
   if (timeRange === "24h") {
     // Solo mostrar hora y minutos para rango de 24 horas
     const hours = date.getHours().toString().padStart(2, "0")
@@ -98,10 +97,11 @@ function formatXAxisTime(dateString: string, timeRange: TimeRange): string {
     // Nombres de meses en español
     const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
     const month = monthNames[date.getMonth()]
-    const hours = date.getHours().toString().padStart(2, "0")
-    const minutes = date.getMinutes().toString().padStart(2, "0")
-
-    return `${day} ${month} ${hours}:${minutes}`
+    // const hours = date.getHours().toString().padStart(2, "0")
+    // const minutes = date.getMinutes().toString().padStart(2, "0")
+    //devolvemos soy dia y mes para no sobrecargar el grafico
+    return `${day} ${month}`
+    //return `${day} ${month} ${hours}:${minutes}`
   }
 }
 
@@ -208,14 +208,14 @@ export function Grafica({ id }: GraficaProps) {
     try {
       setLoading(true)
       setError(null)
-
+      
       // Si estamos usando fechas personalizadas, pasarlas a la función
       // Si no, pasar null para que la función use el rango de tiempo
       const customStartDate = useCustomDates ? startDate.toISOString() : undefined
       const customEndDate = useCustomDates ? endDate.toISOString() : undefined
 
       const data = await getGraphicsData(id, parameter, timeRange, customStartDate, customEndDate)
-
+      
       // Convertir valores de ppb a ppm para formaldehído, O₃ y NO₂
       if (parametersToConvert.includes(parameter)) {
         // Convertir los valores de los datos
@@ -521,7 +521,7 @@ export function Grafica({ id }: GraficaProps) {
           </span>
         </div>
 
-      {/* Indicadores de valores */}
+      {/* Indicadores de valores , incluimos también el warnign max y el danger max*/}
         {graphData && (
           <div className="flex flex-wrap gap-3 mb-6">
             <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
@@ -532,6 +532,12 @@ export function Grafica({ id }: GraficaProps) {
             </div>
             <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
               max. {graphData.max}
+            </div>
+            <div className="bg-yellow-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+              warning: {thresholds?.max_good}
+            </div>
+            <div className="bg-red-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+              danger {thresholds?.max_warning}
             </div>
             {/* Indicador de estado actual */}
             <div
@@ -581,24 +587,30 @@ export function Grafica({ id }: GraficaProps) {
   domain={[
     (dataMin: number) => {
       if (displayThresholds) {
-        const baseMin = Math.min(dataMin, displayThresholds.min_warning);
+        const baseMin =   dataMin;//Math.min(dataMin, displayThresholds.min_warning);
         // Si la diferencia entre dataMin y min_warning es muy grande,
         // podrías ignorar o reducir el peso de min_warning para no "aplastar" los datos.
         // Aquí agregamos un padding mínimo, por ejemplo 0.1,
         // o adaptado a la escala real de tu parámetro:
-        const padding = Math.max(Math.abs(baseMin) * 0.1, 1);
-        return baseMin - padding;
+        //ajustamos a un 10 % por debajo del min, si eso lo hace bajar de cero lo dejamos en cero
+        const padding = Math.abs(baseMin) * 0.2;
+        
+        const valor= baseMin - padding;
+        return Math.round(valor * 10000) / 10000;
       }
       return dataMin;
+      //return 10;
     },
     (dataMax: number) => {
       if (displayThresholds) {
-        const baseMax = Math.max(dataMax, displayThresholds.max_warning);
+        const baseMax = dataMax;//Math.max(dataMax, displayThresholds.max_warning);
         // Similar al mínimo, se añade un padding calculado o fijo:
-        const padding = Math.max(Math.abs(baseMax) * 0.1, 1);
-        return baseMax + padding;
+        const padding = Math.abs(baseMax) * 0.2;
+        const valor= baseMax + padding;
+        return Math.round(valor * 10000) / 10000;
       }
       return dataMax;
+      //return 100;
     },
   ]}
 />
