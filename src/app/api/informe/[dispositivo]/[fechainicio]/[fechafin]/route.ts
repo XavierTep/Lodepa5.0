@@ -16,7 +16,7 @@ export async function GET(
     const dispositivo = Number(dispositivoStr);
 
     // 1) Cargar plantilla
-    const templatePath = path.join(process.cwd(), 'templates', 'Plantilla.xlsx');
+    const templatePath = path.join(process.cwd(), 'templates', 'plantilla.xlsx');
     const workbook = await XlsxPopulate.fromFileAsync(templatePath);
 
     // 2) Hoja de datos en bruto
