@@ -5,6 +5,7 @@ import EditarSala from "./modal/EditarSala"
 import SalaDispositivosFilter from "./SalaFilter"
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import CambiarEstadoDip from "./modal/CambiarEstadoDip"
 
 interface SalaProps {
     sala: SalasDispositivos[]
@@ -78,14 +79,15 @@ export default function SalaTable({ sala, idhospital }: SalaProps) {
                             <div key={s.id_sala} className="bg-white rounded-lg shadow p-4 border border-gray-200">
                                 <div className="flex justify-between items-center mb-2">
                                     <h3 className="font-medium text-gray-900">{s.n_sala}</h3>
-                                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        {s.n_dispositivo}
+                                    <span className=" px-2 py-1 rounded-full text-xs font-medium">
+                                        <CambiarEstadoDip id={s.id_dispositivo} estado={s.encendido} />
                                     </span>
                                 </div>
 
                                 <div className="space-y-2 text-sm">
                                     <p>
-                                        <span className="font-medium">Referencia:</span> {s.referencia}
+                                        <span className="font-medium">Referencia:</span>{" "}
+                                        <span className="truncate block max-w-[250px]"> {s.referencia}</span>
                                     </p>
                                     <p>
                                         <span className="font-medium">API Key:</span>{" "}
@@ -97,6 +99,7 @@ export default function SalaTable({ sala, idhospital }: SalaProps) {
                                             {updateDate.toLocaleString()}
                                         </span>
                                     </p>
+                                    
                                 </div>
 
                                 <div className="mt-4 flex space-x-2">
@@ -120,6 +123,7 @@ export default function SalaTable({ sala, idhospital }: SalaProps) {
                             <th className="border px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
                                 Ultima Actualización
                             </th>
+                            <th className="border px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Activo</th>
                             <th className="border px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Acciones</th>
                         </tr>
                     </thead>
@@ -138,6 +142,7 @@ export default function SalaTable({ sala, idhospital }: SalaProps) {
                                     <td className={`border px-4 py-2 text-sm ${diffMinutes > 75 ? "text-red-500" : "text-gray-800"}`}>
                                         {updateDate.toLocaleString()}
                                     </td>
+                                    <td className="border px-4 py-2 text-sm"><CambiarEstadoDip id={s.id_dispositivo} estado={s.encendido} /></td>
                                     <td className="border px-4 py-2 text-sm">
                                         <EditarSala sala={s} idhospital={idhospital} />
                                     </td>

@@ -7,13 +7,15 @@ import Loading from "@/components/loading/Loading"
 import { Hospital } from "@/actions/hospital/getHospital"
 import { Salas } from "@/actions/hospital/sala/getSala"
 
+
 interface AlertasTableProps {
     userId: number;
     hospitales: Hospital[];
     salas: Salas[];
+    rol: number;
 }
 
-export default function AlertaTable({ userId, hospitales, salas }: AlertasTableProps) {
+export default function AlertaTable({ userId, hospitales, salas , rol}: AlertasTableProps) {
     const [alertas, setAlertas] = useState<Alerta[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -21,7 +23,8 @@ export default function AlertaTable({ userId, hospitales, salas }: AlertasTableP
     useEffect(() => {
         const fetchAlertas = async () => {
             try {
-                const data = await getAlertaByUsuario(userId)
+                
+                const data = await getAlertaByUsuario(userId,rol)
                 setAlertas(data)
             } catch (err) {
                 setError("Error al cargar las alertas. Por favor, intenta de nuevo más tarde.")
@@ -32,7 +35,7 @@ export default function AlertaTable({ userId, hospitales, salas }: AlertasTableP
         }
 
         fetchAlertas()
-    }, [userId])
+    }, [userId, rol])
 
     if (loading) {
         return (

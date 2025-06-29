@@ -22,6 +22,7 @@ export interface SalasDispositivos extends RowDataPacket {
   referencia: string;
   api_key_inbiot: string;
   ultimaActualizacion: Date;
+  encendido: string;
 }
 
 export async function getSalaByHospital(id:number): Promise<Sala[]> {
@@ -46,7 +47,8 @@ export async function getSalaYDispositivoByHospital(id:number): Promise<SalasDis
           d.n_dispositivo,
           d.referencia,
           d.api_key_inbiot,
-          MAX(r.update_time) AS ultimaActualizacion
+          MAX(r.update_time) AS ultimaActualizacion,
+          d.encendido
         FROM salas s
         LEFT JOIN dispositivos d ON s.id = d.sala
         LEFT JOIN registros r ON d.id = r.dispositivo

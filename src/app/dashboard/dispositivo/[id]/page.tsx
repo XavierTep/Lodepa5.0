@@ -12,7 +12,8 @@ import { Suspense } from "react";
 export default async function DispositivoPage({ params }: any) {
   const { id } = params;
   const disp = await getDispositivo(id);
-  console.log(disp);
+  // console.log(disp);
+
 
   return (
     <div className="flex flex-col gap-4 w-full">

@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Bell, Clock, Home, MapPin, Search } from "lucide-react"
+import { ChevronLeft, ChevronRight, Bell, Clock, Home, MapPin, Search, User } from "lucide-react"
 import { ConfAlerta } from "@/actions/alerta/getAlertaConf"
 import NuevaAlerta from "./formulario-modal/NuevaAlerta"
 import { Hospital } from "@/actions/hospital/getHospital"
 import { Salas } from "@/actions/hospital/sala/getSala"
+import EliminarAlerta from "./formulario-modal/EliminarAlerta"
 
 interface AlertasActivasListProps {
     alertasActivas: ConfAlerta[];
@@ -28,9 +29,12 @@ export default function AlertasActivasList({ alertasActivas, userId, hospitales,
         hospital_id: 0,
         hospital: "",
         usuario_id: 0,
+        usuario_nombre: "",
         hora_min: 0,
         hora_max: 0,
     }
+
+    const [selectSala, setSelectSala] = useState<Salas[]>([])
     // Estado para filtros
     const [filtroHospital, setFiltroHospital] = useState<number | null>(null)
     const [filtroSala, setFiltroSala] = useState<number | null>(null)
@@ -67,6 +71,9 @@ export default function AlertasActivasList({ alertasActivas, userId, hospitales,
         // Filtrar por hospital
         if (filtroHospital) {
             resultado = resultado.filter((alerta) => alerta.hospital_id === filtroHospital)
+            setSelectSala(salas.filter((sala) => sala.hospital === filtroHospital))
+        }else{
+            setSelectSala(salas)
         }
 
         // Filtrar por sala
@@ -86,7 +93,7 @@ export default function AlertasActivasList({ alertasActivas, userId, hospitales,
 
         setFilteredAlertas(resultado)
         setCurrentPage(1) // Resetear a primera página cuando cambian los filtros
-    }, [alertasActivas, filtroHospital, filtroSala, busqueda])
+    }, [alertasActivas,salas ,filtroHospital, filtroSala, busqueda])
 
     // Resetear el filtro de sala cuando cambia el hospital
     useEffect(() => {
@@ -133,7 +140,7 @@ export default function AlertasActivasList({ alertasActivas, userId, hospitales,
                         className="w-full px-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                         <option value="">Todas las salas</option>
-                        {salas.map((sala) => (
+                        {selectSala.map((sala) => (
                             <option key={sala.id} value={sala.id}>
                                 {sala.n_sala}
                             </option>
@@ -184,7 +191,10 @@ export default function AlertasActivasList({ alertasActivas, userId, hospitales,
                                         <MapPin className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
                                         {alerta.n_sala}
                                     </p>
-
+                                    <p className="flex items-center text-gray-600">
+                                        <User className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                                        {alerta.usuario_nombre} {alerta.usuario_apellido}
+                                    </p>
                                     <div className="mt-3 pt-3 border-t border-gray-100">
                                         <p className="flex items-center text-gray-700">
                                             <Clock className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
@@ -196,9 +206,7 @@ export default function AlertasActivasList({ alertasActivas, userId, hospitales,
 
                                 <div className="mt-4 flex space-x-2">
                                     <NuevaAlerta confAlerta={alerta} id_usuario={userId} hospitales={hospitales} salas={salas} refreshAlertas={refreshAlertas}/>
-                                    <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-red-600 hover:bg-red-700 transition-colors">
-                                        Eliminar
-                                    </button>
+                                    <EliminarAlerta alertaId={alerta.id} refreshAlertas={refreshAlertas}/>
                                 </div>
                             </div>
                         ))}
@@ -213,6 +221,7 @@ export default function AlertasActivasList({ alertasActivas, userId, hospitales,
                                 <tr className="bg-gray-50 text-gray-700">
                                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Hospital</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Sala</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Usuario</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Hora Mínima</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Hora Máxima</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Acciones</th>
@@ -223,14 +232,13 @@ export default function AlertasActivasList({ alertasActivas, userId, hospitales,
                                     <tr key={alerta.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 text-sm text-gray-700">{alerta.hospital}</td>
                                         <td className="px-6 py-4 text-sm text-gray-700">{alerta.n_sala}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-700">{alerta.usuario_nombre} {alerta.usuario_apellido}</td>
                                         <td className="px-6 py-4 text-sm text-gray-700">{(alerta.hora_min)}</td>
                                         <td className="px-6 py-4 text-sm text-gray-700">{(alerta.hora_max)}</td>
                                         <td className="px-6 py-4 text-sm">
                                             <div className="flex space-x-2">
                                                 <NuevaAlerta confAlerta={alerta} id_usuario={userId} hospitales={hospitales} salas={salas} refreshAlertas={refreshAlertas}/>
-                                                <button className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full text-white bg-red-600 hover:bg-red-700 transition-colors">
-                                                    Eliminar
-                                                </button>
+                                                <EliminarAlerta alertaId={alerta.id} refreshAlertas={refreshAlertas}/>
                                             </div>
                                         </td>
                                     </tr>

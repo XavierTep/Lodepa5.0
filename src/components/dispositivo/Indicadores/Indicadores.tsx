@@ -146,7 +146,7 @@ const Indicadores: React.FC<IndicadoresProps> = ({ id }) => {
         }))
 
         // Obtener colores usando la acción del servidor
-        const colores = await getStatusBatch(parametrosParaUmbrales)
+        const colores = await getStatusBatch(parametrosParaUmbrales,id)
 
         // Aplicar los colores a los indicadores
         const nuevosIndicadoresConColor = nuevosIndicadores.map((indicador) => ({

@@ -26,8 +26,8 @@ const Submenu: React.FC<SubmenuProps> = ({ id }) => {
 
   const handleClick = (tag: string) => {
     setTag(tag)
-    console.log("Tag seleccionado:", tag)
-    console.log("ID recibido:", id)
+    // console.log("Tag seleccionado:", tag)
+    // console.log("ID recibido:", id)
   }
 
   const DefaultComponent = () => <h2>Selecciona una opción</h2>

@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { getSalaByHospital } from "@/actions/hospital/sala/getSala";
+import { getSession } from "@/actions/auth/getSession";
 
 export async function GET(
     request: Request,
     context: { params: Promise<{ id: string }> }
   ) {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+    }
     // 1. Esperar a que se resuelvan los parámetros
     const { id } = await context.params;
   

@@ -7,7 +7,7 @@ import type { Hospital } from "@/actions/hospital/getHospital"
 import type { Sala } from "@/actions/hospital/sala/getSala"
 import type { Rol } from "@/actions/usuario/getRol"
 import type { Usuario } from "@/actions/usuario/getUsuario"
-import { editUser,checkEmailExists } from "@/actions/usuario/formUsuario"
+import { editUser, checkEmailExists } from "@/actions/usuario/formUsuario"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 
@@ -38,7 +38,7 @@ export default function EditarUsuario({ user, roles, hospitales, onClose }: Edit
     email: user.email,
     nombre: user.nombre || "",
     telefono: user.telefono || "",
-    password: user.password,
+    password: "",
     rol: user.rol.id,
     // Usaremos un array de objetos con el id del hospital y los ids de las salas seleccionadas
     userHospitales: initialUserHospitals as UserHospital[],
@@ -240,11 +240,12 @@ export default function EditarUsuario({ user, roles, hospitales, onClose }: Edit
     if (!formData.telefono) {
       newErrors.telefono = "El teléfono es obligatorio"
     } else
-    if (!/^\d{9,}$/.test(formData.telefono)) {
-      newErrors.telefono = "El teléfono debe tener al menos 9 dígitos"
-    }
+      if (!/^\d{9,}$/.test(formData.telefono)) {
+        newErrors.telefono = "El teléfono debe tener al menos 9 dígitos"
+      }
 
     // Validar que el rol sea obligatorio
+    // CONTROL DE PERMISOS 
     if (!formData.rol) {
       newErrors.rol = "El rol es obligatorio"
     }
@@ -293,7 +294,7 @@ export default function EditarUsuario({ user, roles, hospitales, onClose }: Edit
       // El formulario se enviará a través de la acción del servidor
       if (formRef.current) {
         const formData = new FormData(formRef.current)
-        const result= await editUser(formData)
+        const result = await editUser(formData)
 
         toast.success(result.mensaje);
 
@@ -303,8 +304,8 @@ export default function EditarUsuario({ user, roles, hospitales, onClose }: Edit
             onClose()
           }, 2000)
         }
-        
-        if(result.ok===1){
+
+        if (result.ok === 1) {
           if (result.patch) {
             router.push(result.patch)
           }
@@ -340,303 +341,282 @@ export default function EditarUsuario({ user, roles, hospitales, onClose }: Edit
     <div className="container mx-auto px-4 py-3">
       <div className="w-full max-w-3xl mx-auto">
 
-      {/* Error general del formulario */}
-      {errors.form && <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-md">{errors.form}</div>}
+        {/* Error general del formulario */}
+        {errors.form && <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-md">{errors.form}</div>}
 
-      <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-        {/* Información básica del usuario */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Información Personal</h3>
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+          {/* Información básica del usuario */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Información Personal</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* ID (solo lectura) */}
-            <div>
-              <label htmlFor="id" className="block text-sm font-medium text-gray-700 mb-1">
-                ID
-              </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* ID (solo lectura) */}
+
               <input
-                type="number"
+                type="hidden"
                 id="id"
                 name="id"
                 value={formData.id}
                 readOnly
                 className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-500 cursor-not-allowed"
               />
-            </div>
 
-            {/* Nombre */}
-            <div>
-              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre
-              </label>
-              <input
-                type="text"
-                id="nombre"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.nombre ? "border-red-500" : "border-gray-300"
-                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-              />
-              {errors.nombre && <p className="mt-1 text-sm text-red-600">{errors.nombre}</p>}
-            </div>
 
-            {/* Apellido */}
-            <div>
-              <label htmlFor="apellido" className="block text-sm font-medium text-gray-700 mb-1">
-                Apellido
-              </label>
-              <input
-                type="text"
-                id="apellido"
-                name="apellido"
-                value={formData.apellido}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.apellido ? "border-red-500" : "border-gray-300"
-                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-              />
-              {errors.apellido && <p className="mt-1 text-sm text-red-600">{errors.apellido}</p>}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <div className="relative">
+              {/* Nombre */}
+              <div>
+                <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre
+                </label>
                 <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleEmailChange}
-                  className={`w-full px-3 py-2 border rounded-md ${
-                    errors.email ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                />
-                {isCheckingEmail && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <div className="animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
-                  </div>
-                )}
-              </div>
-              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-            </div>
-
-            {/* Teléfono */}
-            <div>
-              <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-1">
-                Teléfono
-              </label>
-              <input
-                type="tel"
-                id="telefono"
-                name="telefono"
-                value={formData.telefono}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.telefono ? "border-red-500" : "border-gray-300"
-                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-              />
-              {errors.telefono && <p className="mt-1 text-sm text-red-600">{errors.telefono}</p>}
-            </div>
-
-            {/* Contraseña */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
+                  type="text"
+                  id="nombre"
+                  name="nombre"
+                  value={formData.nombre}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-md ${
-                    errors.password ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                  className={`w-full px-3 py-2 border rounded-md ${errors.nombre ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 />
-
+                {errors.nombre && <p className="mt-1 text-sm text-red-600">{errors.nombre}</p>}
               </div>
-              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-            </div>
 
-            {/* Rol */}
-            <div>
-              <label htmlFor="rol" className="block text-sm font-medium text-gray-700 mb-1">
-                Rol 
-              </label>
-              <select
-                id="rol"
-                name="rol"
-                value={formData.rol}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${
-                  errors.rol ? "border-red-500" : "border-gray-300"
-                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                
-              >
-                <option value="">Selecciona un rol</option>
-                {roles.map((role) => (
-                  <option key={role.id} value={role.id}>
-                    {role.rol}
-                  </option>
-                ))}
-              </select>
-              {errors.rol && <p className="mt-1 text-sm text-red-600">{errors.rol}</p>}
+              {/* Apellido */}
+              <div>
+                <label htmlFor="apellido" className="block text-sm font-medium text-gray-700 mb-1">
+                  Apellido
+                </label>
+                <input
+                  type="text"
+                  id="apellido"
+                  name="apellido"
+                  value={formData.apellido}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 border rounded-md ${errors.apellido ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                />
+                {errors.apellido && <p className="mt-1 text-sm text-red-600">{errors.apellido}</p>}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleEmailChange}
+                    className={`w-full px-3 py-2 border rounded-md ${errors.email ? "border-red-500" : "border-gray-300"
+                      } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                  />
+                  {isCheckingEmail && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+                    </div>
+                  )}
+                </div>
+                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+              </div>
+
+              {/* Teléfono */}
+              <div>
+                <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-1">
+                  Teléfono
+                </label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 border rounded-md ${errors.telefono ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                />
+                {errors.telefono && <p className="mt-1 text-sm text-red-600">{errors.telefono}</p>}
+              </div>
+
+              {/* Contraseña */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nueva Contraseña
+                </label>
+                <div className="relative">
+                  <input type="password"
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2 border rounded-md ${errors.password ? "border-red-500" : "border-gray-300"
+                      } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                  />
+
+                </div>
+                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+              </div>
+
+              {/* Rol */}
+              <div>
+                <label htmlFor="rol" className="block text-sm font-medium text-gray-700 mb-1">
+                  Rol
+                </label>
+                <select
+                  id="rol"
+                  name="rol"
+                  value={formData.rol}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 border rounded-md ${errors.rol ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+
+                >
+                  <option value="">Selecciona un rol</option>
+                  {roles.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.rol}
+                    </option>
+                  ))}
+                </select>
+                {errors.rol && <p className="mt-1 text-sm text-red-600">{errors.rol}</p>}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Sección de hospitales */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Hospitales Asignados
-            {formData.rol === 2 && <span className="text-red-500 ml-1">*</span>}
-          </h3>
+          {/* Sección de hospitales */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Hospitales Asignados
+              {formData.rol === 2 && <span className="text-red-500 ml-1">*</span>}
+            </h3>
 
-          {errors.hospitales && (
-            <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md text-sm">{errors.hospitales}</div>
-          )}
-
-          {/* Selector para agregar hospitales */}
-          <div className="mb-6">
-            <label htmlFor="add-hospital" className="block text-sm font-medium text-gray-700 mb-2">
-              Agregar Hospital
-            </label>
-            <div className="flex">
-              <select
-                id="add-hospital"
-                onChange={handleAddHospital}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Selecciona un hospital</option>
-                {availableHospitals.map((hospital) => (
-                  <option key={hospital.id} value={hospital.id}>
-                    {hospital.hospital}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Lista de hospitales agregados */}
-          <div className="space-y-4">
-            {formData.userHospitales.length === 0 ? (
-              <p className="text-gray-500 italic">No hay hospitales asignados</p>
-            ) : (
-              formData.userHospitales.map((uh) => {
-                // Obtenemos la información del hospital agregado
-                const hospitalInfo = hospitales.find((h) => h.id === uh.hospitalId)
-                // Obtenemos las salas del mapping para ese hospital
-                const salasDisponibles = salasMapping[uh.hospitalId] || []
-
-                return (
-                  <div key={uh.hospitalId} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <div className="flex justify-between items-center mb-3">
-                      <div className="flex items-center">
-                        <Building2 className="h-5 w-5 text-blue-500 mr-2" />
-                        <span className="font-medium text-gray-800">
-                          {hospitalInfo?.hospital || `Hospital ID: ${uh.hospitalId}`}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveHospital(uh.hospitalId)}
-                        className="text-red-500 hover:text-red-700 transition-colors"
-                        aria-label="Eliminar hospital"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
-
-                    {/* Campo oculto para el ID del hospital */}
-                    <input type="hidden" name={`hospitales`} value={uh.hospitalId} />
-
-                    {/* Selección múltiple de salas con checkboxes */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Salas Asignadas
-                        {formData.rol === 3 && <span className="text-red-500 ml-1">*</span>}
-                      </label>
-
-                      {salasDisponibles.length === 0 ? (
-                        <div className="space-y-3">
-                          <p className="text-sm text-gray-500 italic">No hay salas disponibles para este hospital</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-2 mt-2">
-                          {salasDisponibles.map((sala) => {
-                            const isChecked = uh.salaIds.includes(sala.id)
-                            return (
-                              <div key={sala.id} className="flex items-center">
-                                <input
-                                  type="checkbox"
-                                  id={`sala-${uh.hospitalId}-${sala.id}`}
-                                  checked={isChecked}
-                                  onChange={() => handleSalaToggle(uh.hospitalId, sala.id)}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                />
-                                {/* Campo oculto para enviar las salas seleccionadas */}
-                                {isChecked && <input type="hidden" name={`salas-${uh.hospitalId}`} value={sala.id} />}
-                                <label
-                                  htmlFor={`sala-${uh.hospitalId}-${sala.id}`}
-                                  className="ml-2 block text-sm text-gray-700"
-                                >
-                                  {sala.n_sala}
-                                </label>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              })
+            {errors.hospitales && (
+              <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md text-sm">{errors.hospitales}</div>
             )}
+
+            {/* Selector para agregar hospitales */}
+            <div className="mb-6">
+              <label htmlFor="add-hospital" className="block text-sm font-medium text-gray-700 mb-2">
+                Agregar Hospital
+              </label>
+              <div className="flex">
+                <select
+                  id="add-hospital"
+                  onChange={handleAddHospital}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Selecciona un hospital</option>
+                  {availableHospitals.map((hospital) => (
+                    <option key={hospital.id} value={hospital.id}>
+                      {hospital.hospital}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Lista de hospitales agregados */}
+            <div className="space-y-4">
+              {formData.userHospitales.length === 0 ? (
+                <p className="text-gray-500 italic">No hay hospitales asignados</p>
+              ) : (
+                formData.userHospitales.map((uh) => {
+                  // Obtenemos la información del hospital agregado
+                  const hospitalInfo = hospitales.find((h) => h.id === uh.hospitalId)
+                  // Obtenemos las salas del mapping para ese hospital
+                  const salasDisponibles = salasMapping[uh.hospitalId] || []
+
+                  return (
+                    <div key={uh.hospitalId} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="flex items-center">
+                          <Building2 className="h-5 w-5 text-blue-500 mr-2" />
+                          <span className="font-medium text-gray-800">
+                            {hospitalInfo?.hospital || `Hospital ID: ${uh.hospitalId}`}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveHospital(uh.hospitalId)}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                          aria-label="Eliminar hospital"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </div>
+
+                      {/* Campo oculto para el ID del hospital */}
+                      <input type="hidden" name={`hospitales`} value={uh.hospitalId} />
+
+                      {/* Selección múltiple de salas con checkboxes */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Salas Asignadas
+                          {formData.rol === 3 && <span className="text-red-500 ml-1">*</span>}
+                        </label>
+
+                        {salasDisponibles.length === 0 ? (
+                          <div className="space-y-3">
+                            <p className="text-sm text-gray-500 italic">No hay salas disponibles para este hospital</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2 mt-2">
+                            {salasDisponibles.map((sala) => {
+                              const isChecked = uh.salaIds.includes(sala.id)
+                              return (
+                                <div key={sala.id} className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    id={`sala-${uh.hospitalId}-${sala.id}`}
+                                    checked={isChecked}
+                                    onChange={() => handleSalaToggle(uh.hospitalId, sala.id)}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  />
+                                  {/* Campo oculto para enviar las salas seleccionadas */}
+                                  {isChecked && <input type="hidden" name={`salas-${uh.hospitalId}`} value={sala.id} />}
+                                  <label
+                                    htmlFor={`sala-${uh.hospitalId}-${sala.id}`}
+                                    className="ml-2 block text-sm text-gray-700"
+                                  >
+                                    {sala.n_sala}
+                                  </label>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Campo oculto para enviar los datos completos como JSON */}
-        <input
-          type="hidden"
-          name="userDataJson"
-          value={JSON.stringify({
-            ...formData,
-            userHospitales: formData.userHospitales,
-          })}
-        />
-
-        {/* Botones de acción */}
-        <div className="flex justify-end space-x-3">
-          {onClose && (
+          {/* Botones de acción */}
+          <div className="flex justify-end space-x-3">
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isSubmitting}
+              >
+                Cancelar
+              </button>
+            )}
             <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isSubmitting}
+              type="submit"
+              className={`px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+              disabled={isSubmitting || isCheckingEmail}
             >
-              Cancelar
+              <Save className="h-4 w-4 mr-2" />
+              {isSubmitting ? "Guardando..." : "Guardar Cambios"}
             </button>
-          )}
-          <button
-            type="submit"
-            className={`px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center ${
-              isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-            }`}
-            disabled={isSubmitting || isCheckingEmail}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {isSubmitting ? "Guardando..." : "Guardar Cambios"}
-          </button>
-        </div>
-      </form>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
   )
 }
 

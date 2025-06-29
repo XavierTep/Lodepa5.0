@@ -1,8 +1,15 @@
 // app/api/hospital/listadoSala/route.ts
 import { NextResponse } from "next/server";
 import { getListadoSalas } from "@/actions/hospital/sala/getListadoSalas";
+import { getSession } from "@/actions/auth/getSession";
 
 export async function GET(request: Request) {
+  
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+  }
+
   // Extraemos los parámetros de la query string
   const { searchParams } = new URL(request.url);
   const id_hospital = searchParams.get("id_hospital");

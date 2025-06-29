@@ -1,11 +1,24 @@
+"use client"
+import { getMeasurementRanges } from "@/actions/dispositivo/umbrales";
 import { ListadoSalas } from "@/actions/hospital/sala/getListadoSalas";
 import { formatMeasurementName, getMeasurementUnit } from "@/lib/status-ranges"
 import Link from "next/link"
+import { useEffect, useState } from "react";
 
 
-export default function Badge({ data, rango }: { data: ListadoSalas; rango: any }) {
+export default function Badge({ data }: { data: ListadoSalas }) {
   const { n_sala, id_dispositivo, n_dispositivo, updateTime } = data
   const updateTimeDate = new Date(updateTime);
+  const [rango, setRango] = useState<any>({});
+
+  const fechtUmbrales = async (id_sala: number) => {
+    const umbrales = await getMeasurementRanges(id_sala);
+    setRango(umbrales);
+  } ;
+
+  useEffect(() => {
+    fechtUmbrales(data.id_sala);
+  }, [data.id_sala]);
 
   const getStatus = (name: string, value: any): string => {
     const ranges = rango[name as keyof typeof rango];

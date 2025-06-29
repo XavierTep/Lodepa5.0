@@ -2,6 +2,7 @@ import path from 'path';
 import XlsxPopulate from 'xlsx-populate';
 import { getRegistro, getRegistroDiario, Registro, RegistroDiario } from '@/actions/dispositivo/informe/getRegistro';
 import { NextResponse } from 'next/server';
+import { getSession } from '@/actions/auth/getSession';
 
 export async function GET(
   request: Request,
@@ -10,6 +11,10 @@ export async function GET(
     params: Promise<{ dispositivo: string; fechainicio: string; fechafin: string }>;
   }
 ) {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+  }
   try {
     // 0) Extraer parámetros esperándolos
     const { dispositivo: dispositivoStr, fechainicio, fechafin } = await context.params;

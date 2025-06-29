@@ -27,9 +27,9 @@ return (
       <td className="border px-4 py-2 text-sm">{usuario.nombre}</td>
       <td className="border px-4 py-2 text-sm">{usuario.apellido}</td>
       <td className="border px-4 py-2 text-sm">{usuario.email}</td>
-      <td className="border px-4 py-2 text-sm">
+      {/* <td className="border px-4 py-2 text-sm">
         <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">{usuario.password}</span>
-      </td>
+      </td> */}
       <td className="border px-4 py-2 text-sm">{usuario.telefono ?? "N/A"}</td>
       <td className="border px-4 py-2 text-sm">
         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">{usuario.rol.rol}</span>

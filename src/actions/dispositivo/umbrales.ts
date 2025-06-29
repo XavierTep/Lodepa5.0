@@ -1,14 +1,21 @@
 "use server"
 import  { executeQuery } from "@/lib/db";
 
-export async function getStatus(parametro: string, value: number): Promise<string> {
+export async function getStatus(parametro: string, value: number,id_sala:string): Promise<string> {
+  
   const query = `
-    SELECT min_good, max_good, min_warning, max_warning
-    FROM umbrales
-    WHERE parametro = ?
+    SELECT u.min_good,
+            u.max_good,
+            COALESCE(ua.min_warning, u.min_warning)   AS min_warning,
+            COALESCE(ua.max_warning, u.max_warning)   AS max_warning
+            FROM umbrales_alertas ua
+            INNER JOIN umbrales u ON ua.id_parametro = u.rowid
+            INNER JOIN configuracion_alertas ca ON ua.id_conf_alerta = ca.id
+            WHERE ca.sala_id = ?
+    AND parametro = ?
     LIMIT 1;
   `;
-  const [rows]: any = await executeQuery(query, [parametro]);
+  const [rows]: any = await executeQuery(query, [id_sala,parametro]);
 
   if (!rows || rows.length === 0) {
     return '#22c55e';
@@ -22,12 +29,20 @@ export async function getStatus(parametro: string, value: number): Promise<strin
 }
 
 
-export async function getMeasurementRanges(): Promise<Record<string, any>> {
+export async function getMeasurementRanges(id_sala:number): Promise<Record<string, any>> {
   const query = `
-    SELECT u.parametro, u.min_good, u.max_good, u.min_warning, u.max_warning
-    FROM umbrales u;
+    SELECT
+            u.parametro,
+            u.min_good,
+            u.max_good,
+            COALESCE(ua.min_warning, u.min_warning)   AS min_warning,
+            COALESCE(ua.max_warning, u.max_warning)   AS max_warning
+            FROM umbrales_alertas ua
+            INNER JOIN umbrales u ON ua.id_parametro = u.rowid
+            INNER JOIN configuracion_alertas ca ON ua.id_conf_alerta = ca.id
+            WHERE ca.sala_id = ?;
   `;
-  const [rows]: any = await executeQuery(query, []);
+  const [rows]: any = await executeQuery(query, [id_sala]);
 
   // Transforma los resultados en el objeto con la estructura deseada
   const measurementRanges = rows.reduce((acc: any, row: any) => {
@@ -42,19 +57,25 @@ export async function getMeasurementRanges(): Promise<Record<string, any>> {
 }
 
 // Nueva función para obtener los umbrales específicos de un parámetro
-export async function getParameterThresholds(parametro: string): Promise<{
+export async function getParameterThresholds(parametro: string,id:string): Promise<{
   min_good: number
   max_good: number
   min_warning: number
   max_warning: number
 } | null> {
   const query = `
-    SELECT min_good, max_good, min_warning, max_warning
-    FROM umbrales
-    WHERE parametro = ?
+    SELECT u.min_good,
+            u.max_good,
+            COALESCE(ua.min_warning, u.min_warning)   AS min_warning,
+            COALESCE(ua.max_warning, u.max_warning)   AS max_warning
+            FROM umbrales_alertas ua
+            INNER JOIN umbrales u ON ua.id_parametro = u.rowid
+            INNER JOIN configuracion_alertas ca ON ua.id_conf_alerta = ca.id
+            WHERE ca.sala_id = ?
+    AND parametro = ?
     LIMIT 1;
   `
-  const [rows]: any = await executeQuery(query, [parametro])
+  const [rows]: any = await executeQuery(query, [id,parametro])
 
   if (!rows || rows.length === 0) {
     return null
@@ -65,12 +86,13 @@ export async function getParameterThresholds(parametro: string): Promise<{
 // Nueva acción del servidor para obtener colores para múltiples parámetros
 export async function getStatusBatch(
   parametros: Array<{ parametro: string; valor: number }>,
+  id_sala:string,
 ): Promise<Record<string, string>> {
   const resultados: Record<string, string> = {}
-
+   console.log(id_sala)
   await Promise.all(
     parametros.map(async ({ parametro, valor }) => {
-      resultados[parametro] = await getStatus(parametro, valor)
+      resultados[parametro] = await getStatus(parametro, valor, id_sala)
     }),
   )
 

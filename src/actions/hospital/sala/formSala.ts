@@ -32,6 +32,8 @@ async function crearActualizarSala(sala: any) {
   const connection = await db.getConnection();
 
   try {
+    // Iniciar una transacción
+    await connection.beginTransaction();
     // Crear o actualizar la sala
     if (actualizar) {
       // Actualizar la sala

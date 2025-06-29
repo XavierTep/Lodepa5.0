@@ -125,7 +125,8 @@ const Parametros: React.FC<ParametrosProps> = ({ id }) => {
         if (!response.ok) throw new Error("Error en la respuesta del servidor")
 
         const data = await response.json()
-        console.log({ data })
+        // console.log({ data })
+
 
         // Tomar el último registro del array
         const ultimoRegistro = data.at(-1) // Equivalente a data[data.length - 1]
@@ -166,7 +167,7 @@ const Parametros: React.FC<ParametrosProps> = ({ id }) => {
         }))
 
         // Obtener colores usando la acción del servidor
-        const colores = await getStatusBatch(parametrosParaUmbrales)
+        const colores = await getStatusBatch(parametrosParaUmbrales,id)
 
         // Aplicar los colores a los parámetros
         const nuevosParametrosConColor = nuevosParametros.map((parametro) => ({

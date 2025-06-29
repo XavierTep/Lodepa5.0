@@ -5,7 +5,7 @@ import BadgeList from "./BadgeList";
 import { Hospital } from "@/actions/hospital/getHospital";
 import { ListadoSalas } from "@/actions/hospital/sala/getListadoSalas";
 
-export default function CollapsibleTree({ hospitals, rango, id, rol }: { hospitals: Hospital[]; rango: any; id: number; rol: number }) {
+export default function CollapsibleTree({ hospitals, id, rol }: { hospitals: Hospital[]; id: number; rol: number }) {
   const [expandedHospitals, setExpandedHospitals] = useState<number[]>([]);
   // Permitir null para indicar que se está cargando
   const [roomsData, setRoomsData] = useState<{ [key: number]: ListadoSalas[] | null }>({});
@@ -57,7 +57,7 @@ export default function CollapsibleTree({ hospitals, rango, id, rol }: { hospita
                 <p>Cargando salas...</p>
               ) : roomsData[hospital.id] ? (
                 <div className="mb-2">
-                  <BadgeList data={roomsData[hospital.id]!} rango={rango} />
+                  <BadgeList data={roomsData[hospital.id]!} />
                 </div>
               ) : null}
             </div>

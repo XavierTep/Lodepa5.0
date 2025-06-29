@@ -1,5 +1,4 @@
 import CollapsibleTree from "./Collapsible"
-import { getMeasurementRanges } from "@/actions/dispositivo/umbrales";
 import { getSession } from "@/actions/auth/getSession";
 import { getHospitalAll, getHospitalByUser } from "@/actions/hospital/getHospital";
 
@@ -8,8 +7,9 @@ const ListadoDispositivo = async () => {
   const userSession = await getSession()
   const { id,rol } = userSession  
   // const data = await getListado(id,rol);
-  const rango = await getMeasurementRanges();
   let data;
+
+  // CONTROL DE PERMISOS
   if(rol ===1){
     data = await getHospitalAll();
   }else{
@@ -17,7 +17,7 @@ const ListadoDispositivo = async () => {
   }
 
   return (
-    <CollapsibleTree hospitals={data} rango={rango} id={id} rol={rol}/>
+    <CollapsibleTree hospitals={data} id={id} rol={rol}/>
   )
 }
 

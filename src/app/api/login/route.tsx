@@ -1,3 +1,4 @@
+import { guardarHistorialSesion } from '@/actions/auth/histotial_login';
 import { executeQuery } from '@/lib/db';
 import jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
@@ -75,9 +76,21 @@ export async function POST(req: Request) {
     const response = NextResponse.json({ message: 'Inicio de sesión exitoso' });
     response.cookies.set('token', token, {
       httpOnly: true,
-      secure: false, // TODO: habilitar esta opción en producción cuando se tengo un certificado SSL (https)
+      secure: true, // TODO: habilitar esta opción en producción cuando se tengo un certificado SSL (https)
       maxAge: expirationTime,
+      path: '/',
     });
+
+    const { iat, exp } = jwt.decode(token) as jwt.JwtPayload;
+
+    // Añadir Registro de sesión
+    // console.log("token", iat)
+    // const fechaEmision = new Date((Number(iat)) * 1000);
+    // console.log('Emitido en:', fechaEmision.toISOString());
+
+    await guardarHistorialSesion(user.id,Number(iat),Number(exp),token);
+
+
     // console.log(response)
     return response;
   } catch (error) {

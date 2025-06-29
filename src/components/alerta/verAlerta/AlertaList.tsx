@@ -21,6 +21,7 @@ export default function AlertasList({ alertas,hospitales,salas }: AlertasListPro
     const [filtroHospital, setFiltroHospital] = useState<number | null>(null)
     const [filtroSala, setFiltroSala] = useState<number | null>(null)
     const [busqueda, setBusqueda] = useState("")
+    const [selectSala, setSelectSala] = useState<Salas[]>(salas)
 
     // Paginación
     const [currentPage, setCurrentPage] = useState(1)
@@ -60,6 +61,9 @@ export default function AlertasList({ alertas,hospitales,salas }: AlertasListPro
         // Filtrar por hospital
         if (filtroHospital) {
             resultado = resultado.filter((alerta) => alerta.hospital_id === filtroHospital)
+            setSelectSala(salas.filter((sala) => sala.hospital === filtroHospital))
+        }else{
+            setSelectSala(salas)
         }
 
         // Filtrar por sala
@@ -81,7 +85,7 @@ export default function AlertasList({ alertas,hospitales,salas }: AlertasListPro
 
         setFilteredAlertas(resultado)
         setCurrentPage(1) // Resetear a primera página cuando cambian los filtros
-    }, [alertas,
+    }, [alertas,salas,
         // filtroSolventada, 
         filtroHospital, filtroSala, busqueda])
 
@@ -140,7 +144,7 @@ export default function AlertasList({ alertas,hospitales,salas }: AlertasListPro
                         className="w-full px-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                         <option value="">Todas las salas</option>
-                        {salas.map((sala) => (
+                        {selectSala.map((sala) => (
                             <option key={sala.id} value={sala.id}>
                                 {sala.n_sala}
                             </option>

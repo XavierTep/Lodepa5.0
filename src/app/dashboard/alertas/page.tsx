@@ -19,7 +19,7 @@ export default async function AlertaPage() {
   return (
     <div className="container mx-auto px-4 py-3 flex flex-col">
       <h2 className="text-xl font-semibold text-gray-700">Alertas</h2>
-      <AlertaMenu userId={user.id} hospitales={hospitales} salas={salas} />
+      <AlertaMenu userId={user.id} hospitales={hospitales} salas={salas} rol={user.rol} />
     </div>
   );
 }

@@ -6,6 +6,8 @@ import UsuarioRow from "./UsuarioRow"
 import UsuarioFilter from "./UsuarioFilter"
 import { ChevronLeft, ChevronRight, Pencil } from "lucide-react"
 import EliminarModal from "./formulario/EliminarModal"
+import { useRouter } from 'next/navigation';
+
 
 interface UsuarioTableProps {
   usuarios: Usuario[]
@@ -21,6 +23,12 @@ export default function UsuarioTable({ usuarios }: UsuarioTableProps) {
 
   // Usuarios para la página actual
   const currentUsuarios = filteredUsuarios.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  const router = useRouter();
+  const handleRedirigir = (id: number) => {
+    // Puedes pasar parámetros en la URL, por ejemplo:
+    router.push(`/dashboard/admin/usuario/${id}`);
+  };
 
   // *Observa* cuando cambian las props "usuarios" y actualiza el estado:
   useEffect(() => {
@@ -127,7 +135,8 @@ export default function UsuarioTable({ usuarios }: UsuarioTableProps) {
               </div>
 
               <div className="mt-4 flex space-x-2">
-                <button className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 px-3 rounded flex items-center justify-center transition-colors">
+                <button onClick={() => handleRedirigir(usuario.id)}
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2 px-3 rounded flex items-center justify-center transition-colors">
                 <Pencil className="h-4 w-4 mr-1" />
                   Editar
                 </button>
@@ -147,7 +156,7 @@ export default function UsuarioTable({ usuarios }: UsuarioTableProps) {
               <th className="border px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Nombre</th>
               <th className="border px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Apellido</th>
               <th className="border px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
-              <th className="border px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Contraseña</th>
+              {/* <th className="border px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Contraseña</th> */}
               <th className="border px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Teléfono</th>
               <th className="border px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Rol</th>
               <th className="border px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Hospitales</th>

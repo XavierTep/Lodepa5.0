@@ -178,12 +178,12 @@ export function Grafica({ id }: GraficaProps) {
   // Envolvemos loadThresholds en useCallback para mantener su referencia estable
   const loadThresholds = useCallback(async () => {
     try {
-      const thresholdData = await getParameterThresholds(parameter)
+      const thresholdData = await getParameterThresholds(parameter,id)
       setThresholds(thresholdData)
     } catch (err) {
       console.error("Error al cargar los umbrales:", err)
     }
-  }, [parameter])
+  }, [parameter,id])
 
   // Cargar los umbrales cuando cambia el parámetro
   useEffect(() => {
@@ -276,7 +276,7 @@ export function Grafica({ id }: GraficaProps) {
             setCurrentValueStatus(statusColor)
           } else {
             // Si no hay umbrales, usar la función del servidor
-            const statusColor = await getStatus(parameter, lastValue)
+            const statusColor = await getStatus(parameter, lastValue,id)
             setCurrentValueStatus(statusColor)
           }
         }
@@ -291,7 +291,7 @@ export function Grafica({ id }: GraficaProps) {
             setCurrentValueStatus(statusColor)
           } else {
             // Si no hay umbrales, usar la función del servidor
-            const statusColor = await getStatus(parameter, lastValue)
+            const statusColor = await getStatus(parameter, lastValue,id)
             setCurrentValueStatus(statusColor)
           }
         }

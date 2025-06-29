@@ -11,27 +11,31 @@ interface AlertaMenuProps {
     userId: number;
     hospitales: Hospital[];
     salas: Salas[];
+    rol: number;
 }
 
-export default function AlertaMenu({ userId, hospitales, salas }: AlertaMenuProps) {
+export default function AlertaMenu({ userId, hospitales, salas, rol }: AlertaMenuProps) {
     // Definimos el array de pestañas con un identificador único
 
     const menuItems = [
         {
             id: 1,
             label: "Alertas",
-            comp: <AlertaTable userId={userId} hospitales={hospitales} salas={salas} />,
-        },
-        {
-            id: 2,
-            label: "Gestión Alertas",
-            comp: <AlertaConf userId={userId} hospitales={hospitales} salas={salas} />,
-        },
+            comp: <AlertaTable userId={userId} hospitales={hospitales} salas={salas} rol={rol} />,
+        }
     ]
+    // CONTROL DE PERMISOS
+    if (rol === 1) {
+        menuItems.push({
+            id: 2,
+            label: "Configuración",
+            comp: <AlertaConf userId={userId} hospitales={hospitales} salas={salas} rol={rol} />,
+        })
+    }
     
     const [activeMenu, setActiveMenu] = useState(menuItems[0].id)
 
-    // Buscamos el componente correspondiente al id activo
+    // Buscamos el componente correspondiente al id encendido
     const activeComponent = menuItems.find(item => item.id === activeMenu)?.comp || menuItems[0].comp
 
     return (

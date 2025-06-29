@@ -15,6 +15,7 @@ export default async function Sala({hospitalId}: SalaProps) {
       n_sala: "",
       referencia: "",
       api_key_inbiot: "",
+      encendido: "N"
     }
 
     return (

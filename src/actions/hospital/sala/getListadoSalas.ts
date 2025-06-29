@@ -32,6 +32,7 @@ export async function getListadoSalas(
 ): Promise<ListadoSalas[]> {
   try {
     let rows;
+    // CONTROL DE PERSMISOS
     if (rol === 3) {
       [rows] = await executeQuery<ListadoSalas[] & RowDataPacket[]>(
         `SELECT s.id AS id_sala,

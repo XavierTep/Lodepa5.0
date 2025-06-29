@@ -11,15 +11,16 @@ interface AlertasConfProps {
     userId: number;
     hospitales: Hospital[];
     salas: Salas[];
+    rol: number;
 }
 
-export default function AlertaConf({userId, hospitales, salas}: AlertasConfProps) { 
+export default function AlertaConf({userId, hospitales, salas, rol }: AlertasConfProps) { 
     const [alertasActivas, setAlertasActivas] = useState<ConfAlerta[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const fetchAlertas = async (userId: number) => {
+    const fetchAlertas = async (userId: number,rol: number) => {
         try {
-            const data = await getAlertaConfByUsuario(userId)
+            const data = await getAlertaConfByUsuario(userId, rol)
             setAlertasActivas(data)
         } catch (err) {
             setError("Error al cargar las configuraciones de alertas. Por favor, intenta de nuevo más tarde.")
@@ -29,11 +30,11 @@ export default function AlertaConf({userId, hospitales, salas}: AlertasConfProps
         }
     }
     const refreshAlertasWrapper = () => {
-        fetchAlertas(userId);
+        fetchAlertas(userId, rol);
     };
     useEffect(() => {
-        fetchAlertas(userId)
-    }, [userId])
+        fetchAlertas(userId, rol)
+    }, [userId, rol])
 
     if (loading) {
         return (

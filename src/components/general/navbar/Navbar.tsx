@@ -15,6 +15,7 @@ export default async function Navbar() {
 
   const navLinks = [...links]
 
+  // CONTROL DE PERMISOS
   if (rol === 1) {
     navLinks.push({ name: "Admin", href: "/dashboard/admin" })
   }
