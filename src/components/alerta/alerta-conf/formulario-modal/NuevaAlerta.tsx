@@ -12,6 +12,7 @@ import { Clock, Home, MapPin, Plus, X, AlertTriangle, Settings } from "lucide-re
 import { useRouter } from "next/navigation"
 import { useState, useEffect, useRef } from "react"
 import toast from "react-hot-toast"
+import { formatMeasurementName } from "@/lib/status-ranges"
 
 interface ParametroConfig {
     id: number
@@ -536,7 +537,7 @@ export default function NuevaAlerta({ confAlerta, hospitales, salas, refreshAler
                                                                     onChange={(e) => handleParametroChange(parametro.rowid, "enabled", e.target.checked)}
                                                                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3"
                                                                 />
-                                                                <span className="text-sm font-medium text-gray-700">{parametro.parametro}</span>
+                                                                <span className="text-sm font-medium text-gray-700">{formatMeasurementName(parametro.parametro)}</span>
                                                             </label>
                                                             {config.enabled && <AlertTriangle className="h-4 w-4 text-blue-500" />}
                                                         </div>
